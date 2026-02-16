@@ -1,0 +1,81 @@
+name: Badge_Test-Coverage-LOC
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  update-badges:
+    name: Update Badges
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: "Set up Python"
+        uses: "actions/setup-python@v4"
+        with:
+          python-version: "3.11"
+      - name: "Install dependencies"
+        run: |
+          python -m pip install --upgrade pip
+          pip install ".[test,coverage]"
+      - name: "Cov_and_Test"
+        run: |
+          python -m coverage run -m pytest --junitxml=results.xml
+          python -m coverage json
+          # python -m pytest --junitxml=results.xml
+          # To not run pytest a second time, the junixml arg is added to coverage
+      - name: Download cloc
+        run: sudo apt-get update -y && sudo apt-get install -y cloc
+      - name: xmllint Install
+        run: sudo apt-get install -y libxml2-utils
+      - name: "parse_Cov_and_Tests"
+        run: |
+          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "COVERAGE=$TOTAL" >> $GITHUB_ENV
+          TEST_COUNT=$(xmllint --xpath 'string(//testsuite/@tests)' results.xml)
+          echo "PYTEST_TEST_COUNT=$TEST_COUNT" >> $GITHUB_ENV
+      - name: Get the Numbers
+        run: |
+          echo "CODE_LINES=$(bash ./scripts/cloc.sh --loc)" >> "$GITHUB_ENV"
+          echo "COMMENT_PERCENTAGE=$(bash ./scripts/cloc.sh --percentage)" >> $GITHUB_ENV
+      - name: Create Lines-of-Code-Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.WEISTSICHT_GIST_TOKEN }}
+          gistID: 43e035fba612a7cf89ff180d3a41fc2f
+          filename: loc.json
+          label: Lines of Code
+          message: ${{ env.CODE_LINES }}
+          color: lightgrey
+      - name: Create Comments-Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.WEISTSICHT_GIST_TOKEN }}
+          gistID: 43e035fba612a7cf89ff180d3a41fc2f
+          filename: comments.json
+          label: Comments
+          message: ${{ env.COMMENT_PERCENTAGE }}%
+          valColorRange: ${{ env.COMMENT_PERCENTAGE }}
+          maxColorRange: 50
+          minColorRange: 0
+      - name: "Coverage Badge"
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.WEISTSICHT_GIST_TOKEN }}
+          gistID: 43e035fba612a7cf89ff180d3a41fc2f
+          filename: covbadge.json
+          label: Coverage
+          message: ${{ env.COVERAGE }}%
+          minColorRange: 75
+          maxColorRange: 98
+          valColorRange: ${{ env.COVERAGE }}
+      - name: "Test Number"
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.WEISTSICHT_GIST_TOKEN }}
+          gistID: 43e035fba612a7cf89ff180d3a41fc2f
+          filename: test_count.json
+          label: Tests
+          message: ${{ env.PYTEST_TEST_COUNT }}
+          color: "yellowgreen"

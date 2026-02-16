@@ -1,0 +1,15 @@
+[
+  {
+    "version": "latest",
+    "url": "https://weitsicht.readthedocs.io/en/latest/",
+    "preferred": true
+  },
+  {
+    "version": "dev",
+    "url": "https://weitsicht.readthedocs.io/en/dev/"
+  },
+  {
+    "version": "v0.0.1",
+    "url": "https://weitsicht.readthedocs.io/en/v0.0.1/"
+  }
+]

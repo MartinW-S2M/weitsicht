@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+      - id: ruff          # lint + import sorting (I rules) with fixes
+        args: ["--fix"]
+      - id: ruff-format   # code formatter
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.408
+    hooks:
+      - id: pyright
+        language: system
+        files: ^(src/|tests/|examples/)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: check-case-conflict
+      - id: trailing-whitespace
+
+ci:
+# Install all dependencies for pyright
+  install_command: pip install .[develop]
+
+# Tell precommit.ci bot to update codoe format tools listed in the file
+# versions every quarter
+# The default it so update weekly which is too many new pr's for many
+# maintainers (remove these lines if you aren't using the bot!)
+  autoupdate_schedule: quarterly
