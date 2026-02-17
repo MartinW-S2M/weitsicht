@@ -10,8 +10,7 @@ sphinx:
 
 python:
   install:
-    - method: pip
-      requirements: docs/requirements-rtd.txt
+    - requirements: docs/requirements-rtd.txt
     - method: pip
       path: .
       extra_requirements:
