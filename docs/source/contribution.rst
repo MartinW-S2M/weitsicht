@@ -60,7 +60,7 @@ Since pip does not support installing dependencies without building and installi
       # Format, Linting, Type checking
       pip install pre-commit, pyright,ruff
       # Docu
-      pip install  pydata_sphinx_theme, sphinx-design, sphinx_github_changelog>=1.2.1
+      pip install  pydata_sphinx_theme, sphinx-design
 
 For all the checking and testing there are config files in place. So you should run the tasks without any arguments.
 
@@ -119,7 +119,7 @@ Otherwise there could be dependency issues for pyright.
    pre-commit install
 
 
-Then it will run on each commit. It will perform ``ruff``and ``pyright``.
+Then it will run on each commit. It will also perform ``ruff``.
 So if you run all the checking beforehand it should pass without problems.
 You can check that via:
 
@@ -164,8 +164,7 @@ Ensure the checklist below passes before opening a PR:
 - Docs build cleanly when documentation is touched.
 - ``pre-commit run --all-files``
 
-
-Every pull request will be checked automatically using pre-commit.ci
+Every pull request will be checked automatically using pre-commit.ci and running tests workflow.
 
 Support
 -------
