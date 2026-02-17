@@ -39,7 +39,7 @@ DATA_DIR = Path(__file__).parent.resolve() / "data"
 # or specify the path to the executable manually --> et = ExifToolHelper(executable=PATH_TO_EXIF)
 et_helper = None
 try:
-    from exiftool import ExifToolHelper
+    from exiftool import ExifToolHelper  # pyright: ignore[reportMissingImports]
 
     try:
         et_helper = ExifToolHelper()

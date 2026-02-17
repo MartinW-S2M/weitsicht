@@ -4,7 +4,7 @@
 </p>
 
 # weitsicht
-![PyPi](pypi badge)
+[![pypi](https://img.shields.io/pypi/v/weitsicht)](https://pypi.org/project/weitsicht/)
 ![Python Version 3.10,3.11,3.12,3.13](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?style=flat&logo=python&logoColor=white)
 [![License](https://img.shields.io/badge/License-Apache_2.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -22,7 +22,7 @@
 [![Tests](https://github.com/MartinW-S2M/weitsicht/actions/workflows/tests.yml/badge.svg)](https://github.com/MartinW-S2M/weitsicht/actions/workflows/tests.yml)
 &emsp;&emsp;
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/MartinW-S2M/weitsicht/main.svg)](https://results.pre-commit.ci/latest/github/MartinW-S2M/weitsicht/main)
-&emsp;&emsp;![Docs passin\](https://app.readthedocs.org/projects/weitsicht/badge/?version=latest)
+&emsp;&emsp;![Docs passing](https://app.readthedocs.org/projects/weitsicht/badge/?version=latest)
 
 
 **Python package to use the direct geo-reference information of images for mapping and projection.**

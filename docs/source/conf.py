@@ -140,7 +140,7 @@ html_css_files = [
 ]
 
 # version-switcher details
-version_json = "https://weitsicht-test.readthedocs.io/en/latest/_static/version_switcher.json"
+version_json = "https://weitsicht.readthedocs.io/en/latest/_static/version_switcher.json"
 
 
 html_theme_options = {
