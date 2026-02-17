@@ -21,8 +21,8 @@
 
 [![Tests](https://github.com/MartinW-S2M/weitsicht/actions/workflows/tests.yml/badge.svg)](https://github.com/MartinW-S2M/weitsicht/actions/workflows/tests.yml)
 &emsp;&emsp;
-![pre-commit.ci](pre-commit.ci passing like in pytest)
-&emsp;&emsp;![Docs passing]
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/MartinW-S2M/weitsicht/main.svg)](https://results.pre-commit.ci/latest/github/MartinW-S2M/weitsicht/main)
+&emsp;&emsp;![Docs passin\](https://app.readthedocs.org/projects/weitsicht/badge/?version=latest)
 
 
 **Python package to use the direct geo-reference information of images for mapping and projection.**

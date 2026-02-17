@@ -11,8 +11,8 @@ SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 # Get the location of this script.
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-# Get repository root (script is in .github/workflows/)
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# Get repository root (script is in scripts)
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 
 # Run cloc - this counts code lines, blank lines and comment lines
