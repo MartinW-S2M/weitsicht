@@ -43,7 +43,11 @@ Currently, it is possible to use perspective and ortho-imagery and for mapping a
   </tr>
 </table>
 
-**Capabilities**:
+## Why is it called weitsicht?
+
+`weitsicht` is a German word that roughly means "far-sight" - being able to see into the distance. That fits the core idea here: a photo isn't just pixels; it's an image plane anchored to a viewpoint, and we use geometry to connect that plane to the world beyond the camera. In other words, it's applied photogrammetry with a bit of home-brew minimalism: point, project, monomplot. But "weitsicht" also means having foresight - building with tomorrow's applications and datasets in mind, not just today's demo. So the library stays modular: camera models, mappers, and metadata backends are plug-in pieces you can remix instead of rewriting. Call it far-sight for imagery, and long-sight for architecture.
+
+## Capabilities
 
 - **Monoplotting/Mapping**, map the image’s center-point and footprint (image extend) or image point easily.
 - **Projection**, get the pixel position of 3D coordinates.
