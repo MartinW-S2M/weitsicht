@@ -106,7 +106,7 @@ image004 (array([[1111.88306103,  929.0284043 ]]), array([ True]))
      :align: center
      :alt: Images of drone flight
 
-
+     Red dots are the projections of the mapped blue boint.
 
 
 This information can than be used to find the objects in other images in a GUI like **WISDAMapp** easier.

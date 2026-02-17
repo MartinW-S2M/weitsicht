@@ -116,4 +116,7 @@ if result.ok is True:
     print("Coordinates:", result.coordinates)
     print(f"Mean GSD {result.gsd:2.3f} m")
     print("Mask of mapped points", result.mask)
+    print("Normals:", result.normals)
+    if result.gsd_per_point is not None:
+        print("GSD per point:", result.gsd_per_point)
 assert result.ok is True  # for testing

@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath("../examples"))
 project = "weitsicht"
 copyright = "2026, Martin Wieser"
 author = "Martin Wieser"
-version = "0.0.1"
+version = "0.0.2"
 release = version
 
 # add_module_names = True

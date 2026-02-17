@@ -283,6 +283,65 @@ class CoordinateTransformer:
 
         return _coordinates
 
+    def transform_vector(self, coordinates_start: ArrayNx3, vector: ArrayNx3, direction: str = "forward") -> ArrayNx3:
+        """Transform direction vectors using the configured transformer chain.
+
+        Vectors can not be transformed directly through most CRS transformations, therefore this
+        helper transforms two points per vector and derives the resulting direction:
+        ``start`` and ``start + unit(vector) * 10`` (i.e. 10 units along the provided vector direction).
+
+        :param coordinates_start: Start coordinates (N×3).
+        :type coordinates_start: ArrayNx3
+        :param vector: Direction vectors in the source CRS (N×3 or single 3-vector).
+        :type vector: ArrayNx3
+        :param direction: Transform direction (``forward``, ``inverse``, ``identity``), defaults to ``forward``.
+        :type direction: str
+        :return: Unit direction vectors in the target CRS (N×3).
+        :rtype: ArrayNx3
+        :raises ValueError: If input shapes are incompatible or vectors have zero length.
+        :raises CoordinateTransformationError: If transforming coordinates fails.
+        """
+
+        start = np.asarray(coordinates_start, dtype=float)
+        if start.ndim == 1:
+            start = np.array([start], dtype=float)
+        if start.ndim != 2 or start.shape[1] < 3:
+            raise ValueError("coordinates_start must be array-like with shape (N, 3)")
+        start = start[:, :3]
+
+        vec = np.asarray(vector, dtype=float)
+        if vec.ndim == 1:
+            vec = np.array([vec], dtype=float)
+        if vec.ndim != 2 or vec.shape[1] < 3:
+            raise ValueError("vector must be array-like with shape (N, 3) or (3,)")
+        vec = vec[:, :3]
+
+        if vec.shape[0] == 1 and start.shape[0] > 1:
+            vec = np.repeat(vec, start.shape[0], axis=0)
+        if vec.shape[0] != start.shape[0]:
+            raise ValueError("coordinates_start and vector must have the same length")
+
+        vec_norm = np.linalg.norm(vec, axis=1)
+        if np.any(vec_norm == 0):
+            raise ValueError("vector contains zero-length vectors")
+        vec_unit = vec / vec_norm[:, None]
+
+        end = start + vec_unit * 10.0
+
+        # Transform both start/end in one go for performance.
+        stacked = np.vstack((start, end))
+        stacked_t = self.transform(stacked, direction=direction)
+        stacked_t = np.asarray(stacked_t, dtype=float)
+        start_t = stacked_t[: start.shape[0], :]
+        end_t = stacked_t[start.shape[0] :, :]
+
+        vec_t = end_t - start_t
+        vec_t_norm = np.linalg.norm(vec_t, axis=1)
+        if np.any(vec_t_norm == 0):
+            raise ValueError("Transformed vectors contain zero-length vectors")
+
+        return vec_t / vec_t_norm[:, None]
+
 
 class Geometries:  # pragma: no cover
     pass

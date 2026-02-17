@@ -16,10 +16,12 @@
 
 """Bilinear interpolation utilities."""
 
+import numpy as np
+
 __all__ = ["bilinear_interpolation"]
 
 
-def bilinear_interpolation(x: float | int, y: float | int, points: tuple | list) -> float:
+def bilinear_interpolation(x: float | int, y: float | int, points: tuple | list) -> tuple[float, np.ndarray]:
     """Bilinear interpolation on a rectangle defined by four corner samples.
 
     The ``points`` must be a sequence of four ``(x, y, value)`` tuples forming a rectangle.
@@ -30,8 +32,8 @@ def bilinear_interpolation(x: float | int, y: float | int, points: tuple | list)
     :type y: float | int
     :param points: Four corner points ``(x, y, value)``.
     :type points: tuple | list
-    :return: Interpolated value.
-    :rtype: float
+    :return: Interpolated value and normal.
+    :rtype: tuple[float, numpy.ndarray]
     :raises ValueError: If the points do not form a rectangle or if ``(x, y)`` lies outside the rectangle.
     :raises TypeError: If values have incompatible types.
 
@@ -41,7 +43,8 @@ def bilinear_interpolation(x: float | int, y: float | int, points: tuple | list)
         ...                        [(10, 4, 100),
         ...                         (20, 4, 200),
         ...                         (10, 6, 150),
-        ...                         (20, 6, 300)])
+        ...                         (20, 6, 300)],
+        ...                        return_normals=False)
         165.0
 
     """
@@ -55,6 +58,16 @@ def bilinear_interpolation(x: float | int, y: float | int, points: tuple | list)
     if not x1 <= x <= x2 or not y1 <= y <= y2:
         raise ValueError("(x, y) not within the rectangle")
 
-    return (
+    value = (
         q11 * (x2 - x) * (y2 - y) + q21 * (x - x1) * (y2 - y) + q12 * (x2 - x) * (y - y1) + q22 * (x - x1) * (y - y1)
     ) / ((x2 - x1) * (y2 - y1))
+
+    dx = x2 - x1
+    dy = y2 - y1
+    dz_dx = ((q21 - q11) * (y2 - y) + (q22 - q12) * (y - y1)) / (dx * dy)
+    dz_dy = ((q12 - q11) * (x2 - x) + (q22 - q21) * (x - x1)) / (dx * dy)
+
+    normal = np.array([-dz_dx, -dz_dy, 1.0], dtype=float)
+    normal /= np.linalg.norm(normal)
+
+    return value, normal

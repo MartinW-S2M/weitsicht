@@ -229,6 +229,62 @@ In ``weitsicht``, this intersection step is implemented by mapper classes:
 - :doc:`../mapper/mesh` for triangle-mesh surfaces,
 - :doc:`../mapper/georef_array` for raster based array and full ray-bilinear-patch intersection.
 
+.. _perspective-image-gsd:
+
+GSD estimation (mapping results)
+================================
+
+Mapping methods on :py:class:`weitsicht.ImagePerspective` (``map_points``, ``map_center_point``, ``map_footprint``)
+return a :py:class:`~weitsicht.MappingResultSuccess` that can include GSD estimates:
+
+- ``gsd``: mean GSD over valid mapped points
+- ``gsd_per_point``: per-point GSD (aligned with the input order; use ``mask`` to filter valid entries)
+
+For a perspective camera, GSD is not a single global constant: it varies with **range** (distance to the mapped 3D
+intersection point) and with viewing geometry.
+
+Range / focal length approximation
+----------------------------------
+
+For small angular separations, the scale can be approximated as:
+
+.. math::
+
+    \mathrm{GSD} \approx \frac{R}{f_{px}}
+
+where :math:`R` is the distance from camera center to the mapped 3D point and :math:`f_{px}` is a focal length expressed
+in pixels. In ``weitsicht``, :math:`f_{px}` is taken from
+:py:attr:`weitsicht.CameraBasePerspective.focal_length_for_gsd_in_pixel` (for the OpenCV camera model this is the mean of
+``fx`` and ``fy``).
+
+Incidence angle correction
+--------------------------
+
+If a surface normal :math:`n` is available, ``weitsicht`` applies an incidence-angle correction so that oblique views
+produce larger on-surface footprints:
+
+.. math::
+
+    \mathrm{GSD}_{surface} \approx \frac{R}{f_{px}\,\cos(i)}, \qquad \cos(i) = |\hat{n} \cdot \hat{v}|
+
+with :math:`\hat{v}` the unit viewing direction (from surface point towards the camera).
+
+Neighbour-ray refinement
+------------------------
+
+To capture local effects from the camera model (including distortion and non-uniform ray spacing), ``weitsicht`` refines
+per-point GSD using neighbouring pixel rays (a 1-pixel step in x and y):
+
+- **best effort**: compute a chord-length estimate on the range sphere from ray-direction differences, and
+- **when normals are valid**: intersect the neighbour rays with the local tangent plane through the mapped point and
+  measure the resulting surface distance per pixel step.
+
+The refinement runs without additional mapper calls; it reuses the mapped 3D point and the camera model.
+
+.. note::
+   Normals are provided by the mapper backend and their meaning depends on the mapper. See :doc:`../mapper/normals`.
+   GSD is expressed in the linear unit of the image/mapping CRS; use a metric CRS (meters) for meaningful values.
+
 Data Requirements for Reliable Use
 ==================================
 

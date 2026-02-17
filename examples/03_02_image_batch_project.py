@@ -122,7 +122,7 @@ with open(DATA_DIR / "eor_camera_left.csv", newline="") as csvfile:
             crs=image_crs,
         )
 # ImageBatch Class
-images = ImageBatch(image_dict, mapper=mapper_raster.georef_array)
+images = ImageBatch(image_dict, mapper=mapper_raster._georef_array)
 
 # Map Polygon
 # The polygon which should be mapped
@@ -137,6 +137,10 @@ mapping_result = image.map_points(np.array([[5206.7, 4710.90], [5222.9, 4713.08]
 # Project coordinates on images
 if mapping_result.ok is False:
     raise ArithmeticError("Points could not be mapped")
+
+print("Normals (valid):", mapping_result.normals[mapping_result.mask])
+if mapping_result.gsd_per_point is not None:
+    print("GSD per point (valid):", mapping_result.gsd_per_point[mapping_result.mask])
 
 result_projection = images.project(mapping_result.coordinates, crs_s=CRS("EPSG:25833").to_3d(), only_valid=True)
 

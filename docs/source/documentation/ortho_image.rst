@@ -64,3 +64,18 @@ via ``map_heights_from_coordinates``.
 .. image:: /_static/orthop_z_mapper.svg
    :align: center
    :alt: orthophoto mapping
+
+GSD and area (resolution-based)
+===============================
+
+Unlike perspective images, orthophotos are already rectified into an orthographic view. ``weitsicht`` therefore treats
+their pixel size as constant and uses the dataset ``resolution`` (derived from the affine geo-transform):
+
+- mapping results set ``gsd`` to ``ImageOrtho.resolution`` and fill ``gsd_per_point`` with that constant value,
+- ``map_footprint`` computes ``area`` from the mapped footprint polygon in the orthophoto CRS.
+
+.. warning::
+   ``resolution``, ``gsd``, and the computed polygon ``area`` are expressed in the orthophoto CRS units. If the orthophoto
+   CRS is geographic (lon/lat degrees) or otherwise non-metric, these values are degrees/pixel and degrees^2 (or other
+   non-metric units) and are **not** meaningful physical measurements. Reproject the orthophoto to a projected metric CRS
+   (meters) before using GSD/area for measurement workflows.

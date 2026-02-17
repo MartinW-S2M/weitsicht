@@ -17,6 +17,7 @@
 # Importing
 import csv
 import json
+import sys
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -141,10 +142,20 @@ with open(DATA_DIR / "eor_camera_left.csv", newline="") as csvfile:
         )
 # ImageBatch Class
 # Initialize the image Batch by the dictionary
-images = ImageBatch(image_dict, mapper=mapper_raster.georef_array)
+images = ImageBatch(image_dict, mapper=mapper_raster._georef_array)
 
 # Map all footprints
 results = images.map_footprint(points_per_edge=4)
+
+# Example: inspect normals and per-point GSD for one footprint (printed to stderr to keep stdout as valid JSON).
+for key, result in results.items():
+    if result.ok is True:
+        idx = np.flatnonzero(result.mask)
+        if idx.size > 0:
+            print(f"Example '{key}' normals (first 3): {result.normals[idx[:3]]}", file=sys.stderr)
+            if result.gsd_per_point is not None:
+                print(f"Example '{key}' gsd_per_point (first 3): {result.gsd_per_point[idx[:3]]}", file=sys.stderr)
+        break
 
 geo_dict = {"type": "FeatureCollection", "features": []}
 

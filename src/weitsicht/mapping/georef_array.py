@@ -750,8 +750,7 @@ class MappingGeorefArray(MappingBase):
         intersection_point_array[mask_index, 0] = x
         intersection_point_array[mask_index, 1] = y
 
-        interp_source_crs = np.empty(intersection_point_array.shape, dtype=float)
-        interp_source_crs.fill(np.nan)
+        interp_source_crs = np.full(intersection_point_array.shape, np.nan, dtype=float)
 
         # Transform back to origin crs.
         if coo_trafo is not None:
@@ -761,12 +760,26 @@ class MappingGeorefArray(MappingBase):
         else:
             interp_source_crs[mask_index, :] = np.array(intersection_point_array[mask_index, :]) * 1.0
 
+        # TODO this should be just temporary, but transforming a normal vector from non cartesian coordinates
+        # is even harder to validate and mostly then its not meter unit
+        normals = np.full(intersection_point_array.shape, np.nan, dtype=float)
+        normals_mapper_crs = np.array([0.0, 0.0, 1.0], dtype=float)
+        if coo_trafo is not None:
+            if mask_index.size > 0:
+                normals[mask_index, :] = coo_trafo.transform_vector(
+                    intersection_point_array[mask_index, :],
+                    normals_mapper_crs,
+                    direction="inverse",
+                )
+        else:
+            normals[mask_index, :] = normals_mapper_crs
+
         issue = set()
         if not np.all(mask):
             issue.add(Issue.NO_INTERSECTION)
         if not all(inside_mask):
             issue.add(Issue.OUTSIDE_RASTER)
-        return MappingResultSuccess(ok=True, coordinates=interp_source_crs, mask=mask, issues=issue)
+        return MappingResultSuccess(ok=True, coordinates=interp_source_crs, mask=mask, normals=normals, issues=issue)
 
     def map_heights_from_coordinates(
         self,
@@ -889,7 +902,7 @@ class MappingGeorefArray(MappingBase):
                 [row_upper[_index], col_upper[_index], r4[_index]],
             ]
 
-            value = bilinear_interpolation(points=cell_corners, x=pixel_row[_index], y=pixel_col[_index])
+            value, _normal = bilinear_interpolation(points=cell_corners, x=pixel_row[_index], y=pixel_col[_index])
 
             coo_mapper_crs[valid_index[_index], 2] = value
 
@@ -901,10 +914,23 @@ class MappingGeorefArray(MappingBase):
         else:
             coo_source_crs[valid_index, :] = coo_mapper_crs[valid_index, :] * 1.0
 
+        normals = np.full(coo_source_crs.shape, np.nan, dtype=float)
+        normals_mapper_crs = np.array([0.0, 0.0, 1.0], dtype=float)
+        if coo_trafo is not None:
+            if valid_index.size > 0:
+                normals[valid_index, :] = coo_trafo.transform_vector(
+                    coo_mapper_crs[valid_index, :],
+                    normals_mapper_crs,
+                    direction="inverse",
+                )
+        else:
+            normals[valid_index, :] = normals_mapper_crs
+
         return MappingResultSuccess(
             ok=True,
             coordinates=coo_source_crs,
             mask=valid_mask,
+            normals=normals,
             crs=crs_s,
             issues=issue,
         )

@@ -244,10 +244,24 @@ class MappingHorizontalPlane(MappingBase):
                     issues={Issue.NO_INTERSECTION},
                 )
 
+        normals_mapper_crs = np.full(plane_point_mapper_crs.shape, np.nan, dtype=float)
+        normals_mapper_crs[valid_mask, :] = np.array([0, 0, 1.0])
+
+        normals = np.full(plane_point_mapper_crs.shape, np.nan, dtype=float)
+        if coo_trafo is not None:
+            normals[valid_mask, :] = coo_trafo.transform_vector(
+                plane_point_mapper_crs[valid_mask, :],
+                normals_mapper_crs[valid_mask, :],
+                direction="inverse",
+            )
+        else:
+            normals = normals_mapper_crs
+
         return MappingResultSuccess(
             ok=True,
             coordinates=intersect_points,
             mask=valid_mask,
+            normals=normals,
             crs=crs_s,
             issues=issue,
         )
@@ -300,4 +314,12 @@ class MappingHorizontalPlane(MappingBase):
         # In that case all are valid because its simple assigned its heights
         # Any coordinate error would have already raised an error before
         mask = np.ones((coo_source_crs.shape[0]), dtype=bool)
-        return MappingResultSuccess(ok=True, coordinates=coo_source_crs, mask=mask, crs=crs_s)
+
+        normals_mapper_crs = np.full(coo_source_crs.shape, np.array([0, 0, 1]), dtype=float)
+
+        if coo_trafo is not None:
+            normals = coo_trafo.transform_vector(coo_mapper_crs, normals_mapper_crs, direction="inverse")
+        else:
+            normals = normals_mapper_crs
+
+        return MappingResultSuccess(ok=True, coordinates=coo_source_crs, mask=mask, normals=normals, crs=crs_s)

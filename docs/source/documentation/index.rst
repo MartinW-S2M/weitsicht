@@ -165,3 +165,9 @@ Mapper
         :link-type: doc
 
         Triangle mesh intersections (trimesh), complex surfaces.
+
+    .. grid-item-card:: Surface normals
+        :link: mapper/normals
+        :link-type: doc
+
+        How mappers estimate normals (and what they mean).

@@ -47,9 +47,18 @@ Success types (what they contain)
 - ``ok``: ``True``
 - ``coordinates``: ``np.ndarray`` of shape (N, 3)
 - ``mask``: ``np.ndarray[bool]`` of length N
+- ``normals``: ``np.ndarray`` of shape (N, 3) (surface normals in the same CRS as ``coordinates``; invalid entries are ``nan``)
 - ``crs``: output CRS (may be ``None``)
 - optional metadata: ``gsd``, ``gsd_per_point``, ``area``
 - ``issues``: ``set[Issue]`` (warnings)
+
+GSD estimation for perspective images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For perspective images, the ground sampling distance (GSD) depends on the distance to the mapped 3D point and varies
+across the image.
+
+See :ref:`perspective-image-gsd` for details on how ``gsd`` and ``gsd_per_point`` are estimated.
 
 Failure type
 ------------

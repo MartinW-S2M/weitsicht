@@ -439,11 +439,15 @@ class ImageOrtho(ImageBase):
         if mapping_result.ok is False:
             return ResultFailure(ok=False, error=mapping_result.error, issues=mapping_result.issues)
 
+        gsd_per_point = np.array([self.resolution], dtype=float)
+
         return MappingResultSuccess(
             ok=True,
             coordinates=mapping_result.coordinates,
             mask=mapping_result.mask,
+            normals=mapping_result.normals,
             gsd=self.resolution,
+            gsd_per_point=gsd_per_point,
             issues=mapping_result.issues,
         )
 
@@ -486,8 +490,8 @@ class ImageOrtho(ImageBase):
         assert mapper_to_use is not None
 
         if points_per_edge < 1:
-            px = np.array([0.0, 0.0, float(self.width), float(self.width)], dtype=np.float64)
-            py = np.array([0.0, float(self.height), float(self.height), 0.0], dtype=np.float64)
+            px = np.array([0.0, 0.0, float(self.width), float(self.width)], dtype=float)
+            py = np.array([0.0, float(self.height), float(self.height), 0.0], dtype=float)
         else:
             footprint_points_2d = [[x, 0] for x in np.linspace(0, self.width, 2 + points_per_edge)]
             footprint_points_2d += [[self.width, x] for x in np.linspace(0, self.height, 2 + points_per_edge)][1:]
@@ -513,6 +517,9 @@ class ImageOrtho(ImageBase):
                 issues=mapping_result.issues,
             )
 
+        gsd_per_point = np.full((pt_x.shape[0],), self.resolution, dtype=float)
+        gsd_per_point[~mapping_result.mask] = np.nan
+
         # TODO Implementation of resolution and area could be a problem for non cartesian georef of ortho
         footprint_geom = geometry.Polygon(mapping_result.coordinates)
         area = float(np.round(footprint_geom.area))
@@ -520,7 +527,9 @@ class ImageOrtho(ImageBase):
             ok=True,
             coordinates=mapping_result.coordinates,
             mask=mapping_result.mask,
+            normals=mapping_result.normals,
             gsd=self.resolution,
+            gsd_per_point=gsd_per_point,
             area=area,
             issues=mapping_result.issues,
         )
@@ -578,11 +587,15 @@ class ImageOrtho(ImageBase):
         if mapping_result.ok is False:
             return ResultFailure(ok=False, error=mapping_result.error, issues=mapping_result.issues)
 
+        gsd_per_point = np.full((pt_x.shape[0],), self.resolution, dtype=float)
+        gsd_per_point[~mapping_result.mask] = np.nan
         # TODO Implementation of resolution and area could be a problem for non cartesian georef of ortho
         return MappingResultSuccess(
             ok=True,
             coordinates=mapping_result.coordinates,
             mask=mapping_result.mask,
+            normals=mapping_result.normals,
             gsd=self.resolution,
+            gsd_per_point=gsd_per_point,
             issues=mapping_result.issues,
         )

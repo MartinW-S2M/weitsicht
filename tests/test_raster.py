@@ -160,8 +160,8 @@ def test_load_window():
         preload_window=(556530, 429150, 556550, 429200),
     )
 
-    assert mapping_raster.georef_array is not None
-    result = mapping_raster.georef_array.map_heights_from_coordinates(
+    assert mapping_raster._georef_array is not None
+    result = mapping_raster._georef_array.map_heights_from_coordinates(
         np.array([556538.9876, 429158.5652]), crs_s=mapping_raster.crs
     )
     assert result.ok is True

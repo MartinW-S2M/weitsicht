@@ -12,7 +12,7 @@ What the code does
 - Specifies image pose (position + orientation) and its CRS.
 - Instantiates ``ImagePerspective`` combining camera, CRS, pose, and mapper.
 - Calls ``project`` to project 3D coordinates into the image.
-- Calls ``map_points`` to cast rays through pixels and intersect them with the mapper, returning 3D coords and GSD.
+- Calls ``map_points`` to cast rays through pixels and intersect them with the mapper, returning 3D coords, normals, and GSD estimates.
 
 Hints
 -----
@@ -76,6 +76,7 @@ Attach pose, CRS, camera, and mapper. Once set, ``image.is_geo_referenced`` is `
 7) Map pixels back to 3D
 ------------------------
 ``map_points`` casts rays through the pixels and intersects them with the mapper.
+The mapping result includes ``coordinates``, ``normals``, ``gsd`` and ``gsd_per_point``.
 
 .. literalinclude::  ../../../examples/00_user_guide_walkthroug.py
    :language: python

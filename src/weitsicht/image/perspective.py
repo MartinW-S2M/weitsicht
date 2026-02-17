@@ -34,11 +34,13 @@ from weitsicht.exceptions import (
     NotGeoreferencedError,
     WeitsichtError,
 )
+from weitsicht.geometry.intersection_plane import intersection_plane_mat_operation
 from weitsicht.image.base_class import ImageBase, ImageType
 from weitsicht.mapping.base_class import MappingBase
 from weitsicht.transform.coordinates_transformer import CoordinateTransformer
 from weitsicht.transform.rotation import Rotation
 from weitsicht.utils import (
+    ArrayN_,
     ArrayNx2,
     ArrayNx3,
     Issue,
@@ -410,7 +412,8 @@ class ImagePerspective(ImageBase):
         if mapper is not None:
             mapper_to_use = mapper
 
-        ray_vector = self.pixel_to_ray_vector(np.array(self.center))
+        center_pixel = np.array([self.center], dtype=float)
+        ray_vector = self.pixel_to_ray_vector(center_pixel)
 
         # checked pos and camera via is_geo_referenced
         assert mapper_to_use is not None
@@ -433,15 +436,23 @@ class ImagePerspective(ImageBase):
             return ResultFailure(ok=False, error=result_mapper.error, issues=result_mapper.issues)
 
         coordinates = result_mapper.coordinates
-        dist = np.linalg.norm(self._position - coordinates)
-        gsd = float(dist / self._camera.focal_length_for_gsd_in_pixel)
+        gsd, gsd_per_point = self._estimate_gsd_for_mapped_points(
+            pixels=center_pixel,
+            ray_vectors=ray_vector,
+            coordinates=coordinates,
+            normals=result_mapper.normals,
+            mask=result_mapper.mask,
+            is_undistorted=False,
+        )
         return MappingResultSuccess(
             ok=True,
             coordinates=coordinates,
             mask=result_mapper.mask,
+            normals=result_mapper.normals,
             crs=self._crs,
             issues=result_mapper.issues,
             gsd=gsd,
+            gsd_per_point=gsd_per_point,
         )
 
     def map_footprint(
@@ -522,15 +533,23 @@ class ImagePerspective(ImageBase):
         area = float(np.round(footprint_geom.area))
         # gsd = float(np.round(np.sqrt(area / (self.width * self.height)), 4))
 
-        dist = np.linalg.norm(self._position - footprint_points_3d, axis=1)
-        gsd = float(np.mean(dist / self._camera.focal_length_for_gsd_in_pixel))
+        gsd, gsd_per_point = self._estimate_gsd_for_mapped_points(
+            pixels=footprint_points_2d,
+            ray_vectors=ray_vector,
+            coordinates=footprint_points_3d,
+            normals=result_mapper.normals,
+            mask=result_mapper.mask,
+            is_undistorted=False,
+        )
 
         return MappingResultSuccess(
             ok=True,
             coordinates=footprint_points_3d,
             mask=result_mapper.mask,
+            normals=result_mapper.normals,
             crs=self._crs,
             gsd=gsd,
+            gsd_per_point=gsd_per_point,
             area=area,
             issues=result_mapper.issues,
         )
@@ -606,15 +625,184 @@ class ImagePerspective(ImageBase):
         if mapping_result.ok is False:
             return ResultFailure(ok=False, error=mapping_result.error, issues=mapping_result.issues)
 
-        assert self._camera is not None
-        dist = np.mean(np.linalg.norm(self._position - mapping_result.coordinates, axis=1))
-        gsd = dist / self._camera.focal_length_for_gsd_in_pixel
-
-        # TODO Implementation of gsd per point, optional it could be already in the mapper using normals at points
+        gsd, gsd_per_point = self._estimate_gsd_for_mapped_points(
+            pixels=_points_image,
+            ray_vectors=ray_vector,
+            coordinates=mapping_result.coordinates,
+            normals=mapping_result.normals,
+            mask=mapping_result.mask,
+            is_undistorted=is_undistorted,
+        )
         return MappingResultSuccess(
             ok=True,
             coordinates=mapping_result.coordinates,
             mask=mapping_result.mask,
+            normals=mapping_result.normals,
             gsd=gsd,
+            gsd_per_point=gsd_per_point,
             issues=mapping_result.issues,
         )
+
+    def _estimate_gsd_for_mapped_points(
+        self,
+        pixels: ArrayNx2,
+        ray_vectors: ArrayNx3,
+        coordinates: ArrayNx3,
+        normals: ArrayNx3,
+        mask: MaskN_,
+        is_undistorted: bool,
+        *,
+        pixel_step: float = 1.0,
+    ) -> tuple[float | None, ArrayN_]:
+        """Estimate GSD for mapped points.
+
+        Computes per-point GSD from the distance to each mapped 3D point and the angular
+        separation of neighbouring pixel rays (no additional mapper calls).
+
+        Surface normals (in the same CRS as the mapped coordinates) are used to correct
+        for oblique viewing angles. If normals are valid, neighbouring pixel rays are
+        intersected with the local tangent plane at the mapped point. As a fallback,
+        the range-sphere chord estimate is scaled by ``1 / cos(incidence)`` where
+        ``incidence`` is the angle between the viewing direction and the surface normal.
+        """
+
+        if not self.is_geo_referenced:
+            raise NotGeoreferencedError("Image is not georeferenced")
+
+        assert self._position is not None
+        assert self._camera is not None
+
+        if pixel_step <= 0:
+            raise ValueError("pixel_step must be > 0")
+
+        _pixels = to_array_nx2(pixels).astype(np.float64, copy=False)
+        _ray_vectors = to_array_nx3(ray_vectors).astype(np.float64, copy=False)
+        _coordinates = to_array_nx3(coordinates).astype(np.float64, copy=False)
+        _normals = to_array_nx3(normals).astype(np.float64, copy=False)
+        n_points = _pixels.shape[0]
+
+        if _ray_vectors.shape[0] != n_points:
+            raise ValueError("pixels and ray_vectors must have the same length")
+        if _coordinates.shape[0] != n_points:
+            raise ValueError("pixels and coordinates must have the same length")
+        if _normals.shape[0] != n_points:
+            raise ValueError("pixels and normals must have the same length")
+
+        gsd_per_point = np.full((n_points,), np.nan, dtype=np.float64)
+
+        # Fallback: approximate per-point GSD via range/focal length (still varies with distance).
+        # If surface normals are available, scale by 1 / cos(incidence) to approximate the
+        # footprint on the local tangent plane at the intersection point.
+        view_vec = self._position - _coordinates
+        dist = np.linalg.norm(view_vec, axis=1)
+
+        # Default to no correction (cos=1) for missing/invalid normals.
+        cos_incidence = np.ones((n_points,), dtype=np.float64)
+
+        normal_len = np.linalg.norm(_normals, axis=1)
+        valid_normals = np.isfinite(_normals).all(axis=1) & (normal_len > 0.0)
+        valid_view = np.isfinite(view_vec).all(axis=1) & np.isfinite(dist) & (dist > 0.0)
+
+        normals_unit = np.full_like(_normals, np.nan)
+        if np.any(valid_normals):
+            normals_unit[valid_normals, :] = _normals[valid_normals, :] / normal_len[valid_normals, None]
+
+        view_unit = np.full_like(view_vec, np.nan)
+        if np.any(valid_view):
+            view_unit[valid_view, :] = view_vec[valid_view, :] / dist[valid_view, None]
+
+        valid_inc = valid_normals & valid_view & mask
+        min_cos = 1e-6
+        if np.any(valid_inc):
+            cos_raw = np.abs(np.sum(normals_unit[valid_inc, :] * view_unit[valid_inc, :], axis=1))
+            cos_incidence[valid_inc] = np.clip(cos_raw, min_cos, 1.0)
+
+        gsd_approx = (dist / self._camera.focal_length_for_gsd_in_pixel) / cos_incidence
+        gsd_per_point[mask] = gsd_approx[mask]
+
+        # Neighbour rays: choose direction so that we stay inside image bounds for border points.
+        step_x = np.where(_pixels[:, 0] >= self.width - pixel_step, -pixel_step, pixel_step)
+        step_y = np.where(_pixels[:, 1] >= self.height - pixel_step, -pixel_step, pixel_step)
+
+        pixels_dx = _pixels.copy()
+        pixels_dy = _pixels.copy()
+        pixels_dx[:, 0] += step_x
+        pixels_dy[:, 1] += step_y
+
+        try:
+            ray_vec_neighbours = self.pixel_to_ray_vector(
+                np.vstack((pixels_dx, pixels_dy)), is_undistorted=is_undistorted
+            )
+        except Exception:
+            # Best effort only: keep approximate GSDs.
+            valid_mean = mask & np.isfinite(gsd_per_point)
+            gsd_mean = float(np.mean(gsd_per_point[valid_mean])) if np.any(valid_mean) else None
+            return gsd_mean, gsd_per_point
+
+        ray_vec_dx = ray_vec_neighbours[:n_points, :]
+        ray_vec_dy = ray_vec_neighbours[n_points:, :]
+
+        # Advanced GSD: chord length between rays evaluated at the point distance.
+        valid_adv = mask & np.isfinite(dist) & (dist > 0)
+        if np.any(valid_adv):
+            # Fallback: use chord length on the range sphere, corrected by incidence angle.
+            gsd_x_chord = dist * np.linalg.norm(ray_vec_dx - _ray_vectors, axis=1) / np.abs(step_x)
+            gsd_y_chord = dist * np.linalg.norm(ray_vec_dy - _ray_vectors, axis=1) / np.abs(step_y)
+            gsd_adv = ((gsd_x_chord + gsd_y_chord) / 2.0) / cos_incidence
+
+            # If normals are valid, intersect neighbour rays with the local tangent plane at the
+            # mapped point (uses the normal at the intersection).
+            valid_plane = valid_adv & valid_normals
+            if np.any(valid_plane):
+                # Plane: (x - p)·n = 0, with p=intersection point and n=unit normal.
+                # Ray: x = c + t*u, with c=camera position and u=ray direction.
+                # Solve: t = (p - c)·n / (u·n)
+                cam_pos = np.asarray(self._position, dtype=float)
+                cam_points = np.broadcast_to(cam_pos, (n_points, 3))
+
+                p_dx, valid_dx_raw = intersection_plane_mat_operation(
+                    line_vec=ray_vec_dx,
+                    line_point=cam_points,
+                    plane_point=_coordinates,
+                    plane_normal=normals_unit,
+                )
+                p_dy, valid_dy_raw = intersection_plane_mat_operation(
+                    line_vec=ray_vec_dy,
+                    line_point=cam_points,
+                    plane_point=_coordinates,
+                    plane_normal=normals_unit,
+                )
+                valid_dx = valid_dx_raw & valid_plane
+                valid_dy = valid_dy_raw & valid_plane
+
+                gsd_x_plane = np.full((n_points,), np.nan, dtype=np.float64)
+                gsd_y_plane = np.full((n_points,), np.nan, dtype=np.float64)
+
+                if np.any(valid_dx):
+                    gsd_x_plane[valid_dx] = np.linalg.norm(
+                        p_dx[valid_dx, :] - _coordinates[valid_dx, :], axis=1
+                    ) / np.abs(step_x[valid_dx])
+
+                if np.any(valid_dy):
+                    gsd_y_plane[valid_dy] = np.linalg.norm(
+                        p_dy[valid_dy, :] - _coordinates[valid_dy, :], axis=1
+                    ) / np.abs(step_y[valid_dy])
+
+                gsd_plane = np.full((n_points,), np.nan, dtype=np.float64)
+                both = np.isfinite(gsd_x_plane) & np.isfinite(gsd_y_plane)
+                gsd_plane[both] = (gsd_x_plane[both] + gsd_y_plane[both]) / 2.0
+
+                only_x = np.isfinite(gsd_x_plane) & ~np.isfinite(gsd_y_plane)
+                gsd_plane[only_x] = gsd_x_plane[only_x]
+
+                only_y = np.isfinite(gsd_y_plane) & ~np.isfinite(gsd_x_plane)
+                gsd_plane[only_y] = gsd_y_plane[only_y]
+
+                gsd_adv = np.where(np.isfinite(gsd_plane), gsd_plane, gsd_adv)
+
+            valid_adv &= np.isfinite(gsd_adv)
+            gsd_per_point[valid_adv] = gsd_adv[valid_adv]
+
+        valid_mean = mask & np.isfinite(gsd_per_point)
+        gsd_mean = float(np.mean(gsd_per_point[valid_mean])) if np.any(valid_mean) else None
+        return gsd_mean, gsd_per_point

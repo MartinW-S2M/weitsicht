@@ -77,8 +77,8 @@ def intersection_plane(
 def intersection_plane_mat_operation(
     line_vec: ArrayNx3,
     line_point: ArrayNx3,
-    plane_point: Vector3D,
-    plane_normal: Vector3D | None = None,
+    plane_point: Vector3D | ArrayNx3,
+    plane_normal: Vector3D | ArrayNx3 | None = None,
 ) -> tuple[ArrayNx3, MaskN_]:
     """Intersect multiple rays with a plane (vectorized).
 
@@ -92,54 +92,85 @@ def intersection_plane_mat_operation(
     :param line_point: Ray origin points.
     :type line_point: ArrayNx3
     :param plane_point: A point on the plane.
-    :type plane_point: Vector3D
+    :type plane_point: Vector3D | ArrayNx3
     :param plane_normal: Plane normal vector, defaults to ``None`` (interpreted as ``(0, 0, 1)``).
-    :type plane_normal: Vector3D | None
+        Can be a single normal for all rays (shape ``(3,)``) or per-ray normals (shape ``(N, 3)``).
+    :type plane_normal: Vector3D | ArrayNx3 | None
     :return: Tuple ``(intersection_points, valid_mask)``. Invalid intersections contain NaNs.
     :rtype: tuple[ArrayNx3, ``MaskN_``]
     """
-    valid: np.ndarray
-    valid = np.zeros((line_vec.shape[0],), dtype=bool)
+    _line_vec = np.asarray(line_vec, dtype=float)
+    _line_point = np.asarray(line_point, dtype=float)
+
+    if _line_vec.ndim != 2 or _line_vec.shape[1] != 3:
+        raise ValueError("line_vec must have shape (N, 3)")
+    if _line_point.shape != _line_vec.shape:
+        raise ValueError("line_point must have the same shape as line_vec")
+
+    n_rays = _line_vec.shape[0]
 
     epsilon = 1e-7
-    # Define plane
-    if plane_normal is None:
-        pln = np.array([0.0, 0.0, 1.0])
+    # Plane point (broadcast to per-ray shape if needed).
+    _plane_point = np.asarray(plane_point, dtype=float)
+    if _plane_point.ndim == 1:
+        if _plane_point.shape != (3,):
+            raise ValueError("plane_point must have shape (3,) or (N, 3)")
+        _plane_point = np.broadcast_to(_plane_point, _line_point.shape)
+    elif _plane_point.ndim == 2:
+        if _plane_point.shape != _line_point.shape:
+            raise ValueError("plane_point must have shape (3,) or (N, 3) matching line_vec/line_point")
     else:
-        pln = plane_normal
-    # Define ray
-    # rayDirection = numpy.array([0, -1, -1])
-    # rayPoint = numpy.array([0, 0, 10])  # Any point along the ray
+        raise ValueError("plane_point must have shape (3,) or (N, 3)")
 
-    n_dotu = line_vec.dot(pln)
-    # np.einsum('ij,ij->i', plane_normal, line_vec)
+    # Plane normal: can be a single normal for all rays or per-ray normals.
+    if plane_normal is None:
+        pln = np.array([0.0, 0.0, 1.0], dtype=float)
+        pln_per_ray = False
+    else:
+        pln = np.asarray(plane_normal, dtype=float)
+        if pln.ndim == 1:
+            if pln.shape != (3,):
+                raise ValueError("plane_normal must have shape (3,) or (N, 3)")
+            pln_per_ray = False
+        elif pln.ndim == 2:
+            if pln.shape != _line_vec.shape:
+                raise ValueError("plane_normal must have shape (3,) or (N, 3) matching line_vec/line_point")
+            pln_per_ray = True
+        else:
+            raise ValueError("plane_normal must have shape (3,) or (N, 3)")
+
+    if pln_per_ray:
+        n_dotu = np.einsum("ij,ij->i", _line_vec, pln)
+    else:
+        n_dotu = _line_vec.dot(pln)
 
     # check for parallel lines to plane
     valid = abs(n_dotu) > epsilon
 
-    w = line_point - plane_point
+    w = _line_point - _plane_point
 
-    si = np.zeros(n_dotu.shape[0], dtype=float)
-    si[valid] = np.dot(-w[valid, :], pln) / n_dotu[valid]
+    si = np.zeros((n_rays,), dtype=float)
+    if np.any(valid):
+        if pln_per_ray:
+            numer = np.einsum("ij,ij->i", -w[valid, :], pln[valid, :])
+        else:
+            numer = np.dot(-w[valid, :], pln)
+        si[valid] = numer / n_dotu[valid]
 
-    # si * line_vec
-    si_m_line_vec = np.zeros(w.shape, dtype=float)
-    si_m_line_vec[valid, :] = np.einsum("ij,i->ij", line_vec[valid, :], si[valid])
-
-    # p_si = np.zeros((w.shape[0], 3), dtype=float)
-    p_si = np.empty((w.shape[0], 3), dtype=float)
+    p_si = np.empty((_line_point.shape[0], 3), dtype=float)
     p_si.fill(np.nan)
-    p_si[valid, :] = w[valid, :] + si_m_line_vec[valid, :] + plane_point
+    if np.any(valid):
+        p_si[valid, :] = _line_point[valid, :] + _line_vec[valid, :] * si[valid, None]
 
     # Check if the direction would be to the other direction aka backwards
     # because that is mathematically possible on a line plane intersection
     v1 = np.zeros(w.shape, dtype=float)
-    v1[valid, :] = p_si[valid, :] - line_point[valid, :]
+    v1[valid, :] = p_si[valid, :] - _line_point[valid, :]
     valid[valid] = np.logical_and(valid[valid], np.linalg.norm(v1[valid, :], axis=1) > epsilon)
     cos_a = (
-        np.einsum("ij,ij->i", v1[valid, :], line_vec[valid, :])
+        np.einsum("ij,ij->i", v1[valid, :], _line_vec[valid, :])
         / np.linalg.norm(v1[valid, :], axis=1)
-        / np.linalg.norm(line_vec[valid, :], axis=1)
+        / np.linalg.norm(_line_vec[valid, :], axis=1)
     )
 
     valid[valid] = cos_a > 0.9

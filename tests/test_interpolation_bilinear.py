@@ -20,7 +20,7 @@ def test_bilinear_interpolation():
         [430.5, 1.5, 955.56775],
         [431.5, 1.5, 956.85895],
     ]
-    z = bilinear_interpolation(points=points, x=row, y=col)
+    z, _ = bilinear_interpolation(points=points, x=row, y=col)
     assert abs(z - 952.275286000538) < 1e-5
 
     # another order
@@ -31,7 +31,7 @@ def test_bilinear_interpolation():
         [430.5, 1.5, 955.56775],
     ]
 
-    z = bilinear_interpolation(points=points, x=row, y=col)
+    z, _ = bilinear_interpolation(points=points, x=row, y=col)
     assert abs(z - 952.275286000538) < 1e-5
 
     # x outside of points

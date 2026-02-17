@@ -106,6 +106,11 @@ result_mapping = images["image003"].map_points(object_digitized)
 if result_mapping.ok is True:
     coo = result_mapping.coordinates
     gsd = result_mapping.gsd
+    print("Mapped coordinate(s):", result_mapping.coordinates[result_mapping.mask])
+    print("Normals (valid):", result_mapping.normals[result_mapping.mask])
+    if result_mapping.gsd_per_point is not None:
+        print("GSD per point (valid):", result_mapping.gsd_per_point[result_mapping.mask])
+    print("Mean GSD:", gsd)
 else:
     raise ValueError("Result mapping should have worked")
 

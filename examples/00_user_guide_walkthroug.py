@@ -78,9 +78,15 @@ print("\nMapping image points")
 result_mapping = image.map_points([[1000, 800], [2500, 1600]])
 if result_mapping.ok is True:
     coords_3d = result_mapping.coordinates[result_mapping.mask]
+    normals = result_mapping.normals[result_mapping.mask]
     gsd = result_mapping.gsd  # mean ground sampling distance in mapper CRS units
+    gsd_per_point = (
+        result_mapping.gsd_per_point[result_mapping.mask] if result_mapping.gsd_per_point is not None else None
+    )
     print("coordinates mapped:", coords_3d)
+    print("normals:", normals)
     print("gsd:", gsd)
+    print("gsd_per_point:", gsd_per_point)
 
 # CHECK
 print("\n Checks:")

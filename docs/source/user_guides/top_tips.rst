@@ -55,34 +55,38 @@ CRS quick reference
      - Perspective Image (EOR)
      - Orthophoto CRS
      - Mapper Horizontal
-     - MapperRaster/GeorefArray
+     - MapperRaster GeorefArray
      - Mapper Trimesh
    * - ``None`` (local coordinates, no transforms)
      - OK
      - OK
      - OK
-     - OK (``MappingRaster(force_no_crs=True)``)
+     - OK (``force_no_crs=True``)
      - OK
-   * - Projected/local Cartesian (meters) (e.g. UTM / ``EPSG:25833+3855``)
-       (has to be 3D CRS or compound)
-     - Recommended
-     - Recommended
-     - Recommended
-     - Recommended
-     - Recommended
+   * - Projected/local Cartesian **(0)**
+     - OK
+     - OK
+     - OK
+     - OK
+     - OK
    * - Geocentric Cartesian (ECEF) (e.g. ``EPSG:4978``)
-     - Possible
-     - Rare
-     - Possible (plane is constant Z)
-     - Rare
-     - Possible
+     - OK
+     - Not possible - Rare (never seen such thing)
+     - Not possible at the moment **(1)**
+     - Not possible - Rare (never seen such thing)
+     - OK
    * - Geodetic lon/lat (degrees) (e.g. ``EPSG:4326`` / ``EPSG:4979``)
-     - Not working (use as input CRS and transform to a metric CRS first, also orientation needs to be transformed)
-     - Possible (but units are degrees)
-     - Possible
-     - Possible (only with a 3D CRS; beware units/vertical datum)
-     - Avoid
+     - Not working **(2)**
+     - Possible (but units for gsd/area are degrees)
+     - Possible **(3)**
+     - Possible (only with 3D CRS) **(4)**
+     - Not working (would need transformation first)
 
+| **(0)** has to be 3D CRS or compound, meters (e.g. UTM / ``EPSG:25833+3855``)
+| **(1)** ECEF and plane working mathematically but plane normal 0,0,1 makes no sense here. Will implement nonHorizontal plane soon.
+| **(2)** use as input CRS and transform to a metric CRS first, also orientation needs to be transformed
+| **(3)** using this a lot for sea-side EPSG:4326+3855 -> WGS84 (Lat/Lon) + EGM2008
+| **(4)** beware units/vertical datum, very large raster resolutions may lead to problems
 
 
 Mapping

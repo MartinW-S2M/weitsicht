@@ -186,11 +186,21 @@ ProjectionResult = ProjectionResultSuccess | ResultFailure[Issue]
 
 @dataclass
 class MappingResultSuccess:
-    """Successful mapping result."""
+    """Successful mapping result.
+
+    The returned arrays always keep the input order; use ``mask`` to filter valid entries.
+
+    - ``coordinates``: mapped 3D coordinates (shape ``(N, 3)``)
+    - ``normals``: estimated surface normals at the mapped coordinates (shape ``(N, 3)``)
+      in the same CRS as ``coordinates`` (invalid entries are ``nan``)
+    - ``gsd`` / ``gsd_per_point``: optional GSD estimates (linear unit of the output CRS)
+    - ``area``: optional footprint area (unit² of the output CRS)
+    """
 
     ok: Literal[True]
     coordinates: ArrayNx3
     mask: MaskN_  # mapped 3D coords
+    normals: ArrayNx3
     crs: CRS | CompoundCRS | None = None
     gsd: float | None = None  # mean GSD (or scalar for center)
     gsd_per_point: ArrayN_ | None = None  # optional per-point GSDs

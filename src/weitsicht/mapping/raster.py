@@ -141,7 +141,7 @@ class MappingRaster(MappingBase):
         self._height = self._dataset.shape[0]
         self._width = self._dataset.shape[1]
 
-        self.georef_array: MappingGeorefArray | None = None
+        self._georef_array: MappingGeorefArray | None = None
 
         # TODO this should be optimized
         if self._dataset.crs is not None:
@@ -199,7 +199,7 @@ class MappingRaster(MappingBase):
         :class:`~weitsicht.mapping.georef_array.MappingGeorefArray` backend. Otherwise,
         it returns ``self``.
         """
-        return self.georef_array if self.georef_array is not None else self
+        return self._georef_array if self._georef_array is not None else self
 
     @property
     def georef_mapper(self) -> MappingGeorefArray:
@@ -207,11 +207,11 @@ class MappingRaster(MappingBase):
 
         :raises MappingError: If no in-memory window/full raster was loaded.
         """
-        if self.georef_array is None:
+        if self._georef_array is None:
             raise MappingError(
                 "georef_array is not loaded. Call load_window(...) or set preload_window / preload_full_raster."
             )
-        return self.georef_array
+        return self._georef_array
 
     @classmethod
     def from_dict(cls, mapper_dict: Mapping[str, Any]) -> MappingRaster:
@@ -334,8 +334,10 @@ class MappingRaster(MappingBase):
 
         if limits_crs is None:
             raster_array = self._dataset.read(indexes=self.index_band)
-            self.georef_array = MappingGeorefArray(raster_array=raster_array, geo_transform=self.transform, crs=self._crs)
-            return self.georef_array
+            self._georef_array = MappingGeorefArray(
+                raster_array=raster_array, geo_transform=self.transform, crs=self._crs
+            )
+            return self._georef_array
 
         # Test if limits inside window
         raster_bounds = self._dataset.bounds
@@ -371,12 +373,12 @@ class MappingRaster(MappingBase):
         )
         affine_of_window = self._dataset.window_transform(rounded_win)
 
-        self.georef_array = MappingGeorefArray(
+        self._georef_array = MappingGeorefArray(
             raster_array=self._dataset.read(indexes=self.index_band, window=rounded_win),
             geo_transform=affine_of_window,
             crs=self._crs,
         )
-        return self.georef_array
+        return self._georef_array
 
     def pixel_to_coordinate(self, px_row: float, px_col: float) -> tuple:
         """Convert pixel indices to coordinates in raster CRS.
@@ -488,7 +490,7 @@ class MappingRaster(MappingBase):
         crs_s: CRS | None = None,
         transformer: CoordinateTransformer | None = None,
         max_iter: int = 20,
-    ) -> tuple[Vector3D, bool, bool, bool]:
+    ) -> tuple[Vector3D, bool, bool, bool, Vector3D]:
         """Calculate the intersection of a single ray with the raster surface.
 
         The algorithm iteratively adjusts the intersection plane using heights sampled from the raster.
@@ -503,8 +505,8 @@ class MappingRaster(MappingBase):
         :type transformer: CoordinateTransformer | None
         :param max_iter: Maximum number of iterations, defaults to ``20``.
         :type max_iter: int
-        :return: Tuple of ``(intersection_coordinates, is_invalid, is_outside_raster, Nodata height)``.
-        :rtype: tuple[Vector3D, bool, bool]
+        :return: Tuple ``(intersection_coordinates, is_invalid, is_outside_raster, Nodata height, normal in crs_s)``.
+        :rtype: tuple[Vector3D, bool, bool, Vector3D]
         :raises CRSInputError: If both ``crs_s`` and ``transformer`` are provided.
         :raises CoordinateTransformationError: If coordinate transformation fails.
         """
@@ -526,36 +528,44 @@ class MappingRaster(MappingBase):
         height = self.get_coordinate_height(x_crs=plane_point_mapper_crs[0], y_crs=plane_point_mapper_crs[1])
 
         if height is None:
-            return intersect_coo, False, False, True
+            return intersect_coo, False, False, True, np.array([np.nan, np.nan, np.nan])
 
+        # height for the initial itteration we will set as vertical half way from ray start and raster height.
+        height_iteration = plane_point_mapper_crs[2] / 2.0 + height / 2.0
+
+        _p = np.array([plane_point_mapper_crs[0], plane_point_mapper_crs[1], height_iteration])
         if coo_trafo is not None:
-            plane_point_source_crs = coo_trafo.transform(
-                np.array([plane_point_mapper_crs[0], plane_point_mapper_crs[1], height]),
-                direction="inverse",
-            )[0, :]
-        else:
-            plane_point_source_crs = np.array([plane_point_mapper_crs[0], plane_point_mapper_crs[1], height])
+            plane_point_source_crs = coo_trafo.transform(_p, direction="inverse")[0, :]
+            plane_normal_source_crs = coo_trafo.transform_vector(_p, np.array([0, 0, 1]), direction="inverse")[0, :]
 
-        height_iteration = ray_start_crs_s[2] / 2.0 + plane_point_source_crs[2] / 2.0
+        else:
+            plane_point_source_crs = _p
+            plane_normal_source_crs = np.array([0, 0, 1])
 
         count_iteration = 0
-        height_transformed = 0
 
-        # Iterate till the difference is smaller than 0.02meter or 20 times no
-        # height was found even though we are on the raster (maybe hole)
-        # TODO change to check if we are on the same pixel iterating
-        while height_iteration - height_transformed > 0.02 and count_iteration < 40:
-            # is also a point [0,0,height_iteration] working?
-            plane_point = np.array([ray_start_crs_s[0], ray_start_crs_s[1], height_iteration])
+        intersect_coo = np.array([0, 0, 0])
 
+        norm_diff = np.linalg.norm(plane_point_source_crs - ray_start_crs_s)
+        # Iterate till the difference is smaller than 0.02meter or 40 iteations are over
+        # We check if the ray distance between itterations is less than 1mm
+        while (norm_diff > 0.02 and count_iteration < 40) or count_iteration < 1:
+            intersect_coo_old = intersect_coo.copy()
             # get the intersection point
-            intersect_coo, valid_intersection = intersection_plane(ray_vector_crs_s, ray_start_crs_s, plane_point)
+            intersect_coo, valid_intersection = intersection_plane(
+                ray_vector_crs_s, ray_start_crs_s, plane_point_source_crs, plane_normal_source_crs
+            )
+            norm_diff = np.linalg.norm(intersect_coo - intersect_coo_old)
 
             # check if the direction is not backwards
             if not valid_intersection:
-                return intersect_coo, True, False, False
+                return intersect_coo, True, False, False, np.array([np.nan, np.nan, np.nan])
 
-            # new Height from the estimated position
+            # transform back from source crs in 3d space to mapper crs to get new height
+            # We will transform the intersection point and grap the raster height on this positions.
+            # As well we are transforming the local vertical normal in the mapper crs at that point to the source crs.
+
+            # Transform to mapper crs
             if coo_trafo is not None:
                 plane_point_mapper_crs = coo_trafo.transform(
                     np.array([intersect_coo[0], intersect_coo[1], intersect_coo[2]])
@@ -563,39 +573,38 @@ class MappingRaster(MappingBase):
             else:
                 plane_point_mapper_crs = np.array([intersect_coo[0], intersect_coo[1], intersect_coo[2]])
 
-            if self.coordinate_on_raster(plane_point_mapper_crs[0], plane_point_mapper_crs[1]):
-                height_pixel = self.get_coordinate_height(plane_point_mapper_crs[0], plane_point_mapper_crs[1])
-                count_iteration += 1
-                if height_pixel is None:
-                    return intersect_coo, False, False, True
+            # Check if we are still on the raster, otherwise return OUTSIDE flag
+            if not self.coordinate_on_raster(plane_point_mapper_crs[0], plane_point_mapper_crs[1]):
+                return intersect_coo, False, True, False, np.array([np.nan, np.nan, np.nan])
 
-                if coo_trafo is not None:
-                    plane_point_source_crs = coo_trafo.transform(
-                        np.array(
-                            [
-                                plane_point_mapper_crs[0],
-                                plane_point_mapper_crs[1],
-                                height_pixel,
-                            ]
-                        ),
-                        direction="inverse",
-                    )[0, :]
-                    height_transformed = plane_point_source_crs[2]
-                else:
-                    height_transformed = height_pixel * 1.0
-
-            else:
-                return intersect_coo, False, True, False
+            # Get height from raster and return NO_DATA_TOUCHED if not data was the raster cell'S value
+            height_pixel = self.get_coordinate_height(plane_point_mapper_crs[0], plane_point_mapper_crs[1])
+            count_iteration += 1
+            if height_pixel is None:
+                return intersect_coo, False, False, True, np.array([np.nan, np.nan, np.nan])
 
             # This is to be sure that we will not run in a loop
-            height_iteration = height_iteration * 0.2 + height_transformed * 0.8
+            height_iteration = height_iteration * 0.02 + height_pixel * 0.98
 
-            intersect_coo = np.array([intersect_coo[0], intersect_coo[1], height_transformed])
+            # Now transform the new point back (with the updated height) to source crs as well the verical normal
+            _p = np.array([plane_point_mapper_crs[0], plane_point_mapper_crs[1], height_iteration])
+            if coo_trafo is not None:
+                plane_point_source_crs = coo_trafo.transform(
+                    _p,
+                    direction="inverse",
+                )[0, :]
+                plane_normal_source_crs = coo_trafo.transform_vector(_p, np.array([0, 0, 1]), direction="inverse")[0, :]
+            else:
+                plane_point_source_crs = _p
+                plane_normal_source_crs = np.array([0, 0, 1])
+
+            # That was not correct as here we would shit the wrong intersection point
+            # intersect_coo = np.array([intersect_coo[0], intersect_coo[1], height_transformed])
 
         if count_iteration >= max_iter:
-            return intersect_coo, True, True, True
+            return intersect_coo, True, True, True, plane_normal_source_crs
 
-        return intersect_coo, False, False, False
+        return intersect_coo, False, False, False, plane_normal_source_crs
 
     def map_coordinates_from_rays(
         self,
@@ -636,21 +645,24 @@ class MappingRaster(MappingBase):
         if crs_s is not None and transformer is not None:
             raise CRSInputError("Either crs or transformation can be used or both None")
 
-        if self.georef_array is not None:
-            return self.georef_array.map_coordinates_from_rays(
+        if self._georef_array is not None:
+            return self._georef_array.map_coordinates_from_rays(
                 ray_vectors_crs_s=_ray_vectors_crs_s,
                 ray_start_crs_s=_ray_start_crs_s,
-                crs_s=crs_s,
                 transformer=transformer,
+                crs_s=crs_s,
             )
 
         list_coo = []
         valid = []
+        normals = []
         issue = set()
 
         for idx, coordinates in enumerate(_ray_start_crs_s):
-            res = self.intersection_ray(_ray_vectors_crs_s[idx, :], coordinates, crs_s=crs_s, transformer=transformer)
-            inter_p, invalid_flag, outside_flag, nodata_touched = res
+            res = self.intersection_ray(_ray_vectors_crs_s[idx, :], coordinates, transformer=transformer, crs_s=crs_s)
+            inter_p, invalid_flag, outside_flag, nodata_touched, normal = res
+
+            normals.append(normal)
 
             if outside_flag:
                 inter_p = np.array([np.nan, np.nan, np.nan])
@@ -672,6 +684,7 @@ class MappingRaster(MappingBase):
             list_coo.append(inter_p)
 
         coo_crs_source = np.array(list_coo)
+        normals_crs_source = np.array(normals)
         mask = np.array(valid, dtype=bool)
 
         if not np.all(mask):
@@ -682,7 +695,14 @@ class MappingRaster(MappingBase):
                     issues=issue,
                 )
 
-        return MappingResultSuccess(ok=True, coordinates=coo_crs_source, mask=mask, issues=issue, crs=crs_s)
+        return MappingResultSuccess(
+            ok=True,
+            coordinates=coo_crs_source,
+            mask=mask,
+            normals=normals_crs_source,
+            issues=issue,
+            crs=crs_s,
+        )
 
     def map_heights_from_coordinates_sampling(
         self,
@@ -737,22 +757,36 @@ class MappingRaster(MappingBase):
                 )
 
         height = np.fromiter(
-            (val[0] for val in self._dataset.sample(coo_mapper_crs[:, :2], indexes=self.index_band)),
+            (val[0] for val in self._dataset.sample(coo_mapper_crs[valid_mask, :2], indexes=self.index_band)),
             dtype=float,
         )
 
-        coo_mapper_crs[:, 2] = height
-
+        coo_mapper_crs[valid_mask, 2] = height
+        coo_source_crs = np.full(coordinates_crs_s.shape, np.nan, dtype=float)
         # Transform back to source crs.
         if coo_trafo is not None:
-            coo_source_crs = coo_trafo.transform(coo_mapper_crs, direction="inverse")
+            coo_source_crs[valid_mask, :] = coo_trafo.transform(coo_mapper_crs[valid_mask, :], direction="inverse")
         else:
-            coo_source_crs = coo_mapper_crs * 1.0
+            coo_source_crs[valid_mask, :] = coo_mapper_crs[valid_mask, :] * 1.0
+
+        normals = np.full(coo_source_crs.shape, np.nan, dtype=float)
+        normals_mapper_crs = np.array([0.0, 0.0, 1.0], dtype=float)
+        if coo_trafo is not None:
+            mask_index = np.flatnonzero(valid_mask)
+            if mask_index.size > 0:
+                normals[mask_index, :] = coo_trafo.transform_vector(
+                    coo_mapper_crs[mask_index, :],
+                    normals_mapper_crs,
+                    direction="inverse",
+                )
+        else:
+            normals[valid_mask, :] = normals_mapper_crs
 
         return MappingResultSuccess(
             ok=True,
             coordinates=coo_source_crs,
             mask=valid_mask,
+            normals=normals,
             crs=crs_s,
             issues=issue,
         )
@@ -791,8 +825,8 @@ class MappingRaster(MappingBase):
         if crs_s is not None and transformer is not None:
             raise CRSInputError("Either crs or transformation can be used or both None")
 
-        if self.georef_array is not None:
-            return self.georef_array.map_heights_from_coordinates(
+        if self._georef_array is not None:
+            return self._georef_array.map_heights_from_coordinates(
                 coordinates_crs_s=_coordinates_crs_s,
                 crs_s=crs_s,
                 transformer=transformer,
@@ -859,7 +893,7 @@ class MappingRaster(MappingBase):
                 [row_upper[_index], col_upper[_index], data[1, 1]],
             ]
 
-            value = bilinear_interpolation(points=cell_corners, x=pixel_row[_index], y=pixel_col[_index])
+            value, _normal = bilinear_interpolation(points=cell_corners, x=pixel_row[_index], y=pixel_col[_index])
 
             # We could use very well .read( with resampling=bliniear) here
             # win = Window(col_off=pixel_col[_index], row_off=pixel_row[_index], width=1, height=1)
@@ -876,10 +910,23 @@ class MappingRaster(MappingBase):
         else:
             coo_source_crs[valid_index, :] = coo_mapper_crs[valid_index, :] * 1.0
 
+        normals = np.full(coo_source_crs.shape, np.nan, dtype=float)
+        normals_mapper_crs = np.array([0.0, 0.0, 1.0], dtype=float)
+        if coo_trafo is not None:
+            if valid_index.size > 0:
+                normals[valid_index, :] = coo_trafo.transform_vector(
+                    coo_mapper_crs[valid_index, :],
+                    normals_mapper_crs,
+                    direction="inverse",
+                )
+        else:
+            normals[valid_index, :] = normals_mapper_crs
+
         return MappingResultSuccess(
             ok=True,
             coordinates=coo_source_crs,
             mask=valid_mask,
+            normals=normals,
             crs=crs_s,
             issues=issue,
         )

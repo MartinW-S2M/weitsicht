@@ -28,6 +28,8 @@ network.set_network_enabled(True)  # type: ignore
 
 FIXTURE_DIR = Path(__file__).parent.resolve() / "data"
 
+# THE raster mapper here will use in background georef mapper as we are pre loading array
+
 
 @pytest.fixture
 def raster_mapper():
@@ -96,9 +98,7 @@ def test_map_coordinates_from_rays(raster_mapper):
         ]
     )
 
-    b = raster_mapper.georef_array.map_coordinates_from_rays(
-        ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs
-    )
+    b = raster_mapper.map_coordinates_from_rays(ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs)
     assert b.ok is True
     # We will test 2 things
     # (1) if the intersection point is correct
@@ -107,7 +107,7 @@ def test_map_coordinates_from_rays(raster_mapper):
     # and the bilinear interpolated height for that point is also correct
     interp_plane, valid_mas = intersection_plane_mat_operation(ray_vec, point_3d, b.coordinates, np.array([0, 0, 1]))
     assert np.allclose(interp_plane, b.coordinates, atol=1e-7, rtol=0)
-    bilin_coo = raster_mapper.georef_array.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
+    bilin_coo = raster_mapper.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
     assert bilin_coo.ok is True
     assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=0)
 
@@ -123,13 +123,11 @@ def test_map_coordinates_from_rays(raster_mapper):
     )
     point_3d = np.zeros(ray_vec.shape) + np.array([557057, 429465.0, 1520 + 200])
 
-    b = raster_mapper.georef_array.map_coordinates_from_rays(
-        ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs
-    )
+    b = raster_mapper.map_coordinates_from_rays(ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs)
     assert b.ok is True
     interp_plane, valid_mas = intersection_plane_mat_operation(ray_vec, point_3d, b.coordinates, np.array([0, 0, 1]))
     assert np.allclose(interp_plane, b.coordinates, atol=1e-7, rtol=0)
-    bilin_coo = raster_mapper.georef_array.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
+    bilin_coo = raster_mapper.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
     assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=0)
 
     ray_vec = np.array(
@@ -143,41 +141,35 @@ def test_map_coordinates_from_rays(raster_mapper):
     )
     point_3d = np.zeros(ray_vec.shape) + np.array([557057, 429465.0, 1520 + 200])
 
-    b = raster_mapper.georef_array.map_coordinates_from_rays(
-        ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs
-    )
+    b = raster_mapper.map_coordinates_from_rays(ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs)
     interp_plane, valid_mas = intersection_plane_mat_operation(ray_vec, point_3d, b.coordinates, np.array([0, 0, 1]))
     assert np.allclose(interp_plane, b.coordinates, atol=1e-7, rtol=0)
-    bilin_coo = raster_mapper.georef_array.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
+    bilin_coo = raster_mapper.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
     assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=0)
 
     # horizontal rays on X
     point_3d = np.array([[551842.0 - 10, 433466.0 - 50, 1130], [551842.0 - 10, 433466.0 - 50, 1130]])
     # This gives an error -> Check
     ray_vec = np.array([[1.0, -0.1, 0.0], [1.0, 0.0, 0]])
-    b = raster_mapper.georef_array.map_coordinates_from_rays(
-        ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs
-    )
+    b = raster_mapper.map_coordinates_from_rays(ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs)
     # That plane needs to be vertical, otherwise that horizontal ray is parallel
     interp_plane, valid_mas = intersection_plane_mat_operation(
         ray_vec, point_3d, b.coordinates, np.array([0.1, 0.0, 0.0])
     )
     assert np.allclose(interp_plane, b.coordinates, atol=1e-7, rtol=0)
-    bilin_coo = raster_mapper.georef_array.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
+    bilin_coo = raster_mapper.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
     assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=0)
 
     # horizontal rays on Y
     point_3d = np.array([[551842.0 + 10, 433466.0 - 50, 1130], [551842.0 + 10, 433466.0 - 50, 1130]])
     # This gives an error -> Check
     ray_vec = np.array([[0.0, -1.0, 0.0], [0.0, -1.0, 0]])
-    b = raster_mapper.georef_array.map_coordinates_from_rays(
-        ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs
-    )
+    b = raster_mapper.map_coordinates_from_rays(ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs)
 
     # That plane needs to be vertical, otherwise that horizontal ray is parallel
     interp_plane, valid_mas = intersection_plane_mat_operation(ray_vec, point_3d, b.coordinates, np.array([0, -1.0, 0.0]))
     assert np.allclose(interp_plane, b.coordinates, atol=1e-7, rtol=0)
-    bilin_coo = raster_mapper.georef_array.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
+    bilin_coo = raster_mapper.map_heights_from_coordinates(b.coordinates[:, :2], raster_mapper.crs)
     assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=0)
 
 
@@ -187,13 +179,11 @@ def test_speed(raster_mapper_full):
     ray_vec = np.random.random((1000, 3)) / 100.0 + np.array([0, 0, -1])
     point_3d = np.random.random((1000, 3)) / 10.0 + np.array([556782, 429523, 1600])
 
-    b = raster_mapper_full.georef_array.map_coordinates_from_rays(
-        ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs
-    )
+    b = raster_mapper_full.map_coordinates_from_rays(ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs)
     print(time.time() - a)
     interp_plane, valid_mas = intersection_plane_mat_operation(ray_vec, point_3d, b.coordinates)
     assert np.allclose(interp_plane, b.coordinates, atol=1e-7, rtol=0)
-    bilin_coo = raster_mapper_full.georef_array.map_heights_from_coordinates(b.coordinates[:, :2], ray_crs)
+    bilin_coo = raster_mapper_full.map_heights_from_coordinates(b.coordinates[:, :2], ray_crs)
 
     assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=1e-7)
 
@@ -210,7 +200,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
             [556538.9876, 429158.5652, 1284.07670385579],
         ]
     )
-    result = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    result = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
     assert result.ok is True
     assert np.allclose(result.coordinates, coo, atol=0.01, rtol=0)
 
@@ -223,7 +213,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
     )
     crs = CRS("EPSG:25833+5778")
 
-    result = raster_mapper_full.georef_array.map_heights_from_coordinates(coo_utm, crs)
+    result = raster_mapper_full.map_heights_from_coordinates(coo_utm, crs)
     assert result.ok is True
     assert np.allclose(result.coordinates, coo_utm, atol=0.01, rtol=0)
 
@@ -234,7 +224,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
     #   Value: 1024.56193042452
     #   coordinates in raster crs
     coo = np.array([561950.0, 429158.5652])
-    coo_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    coo_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
     assert coo_map_heights.ok is True
     assert np.allclose(coo_map_heights.coordinates[0, 2], 1024.56193042452, atol=1e-6, rtol=0)
 
@@ -242,7 +232,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
     #   Location: (1010.90003954914P,430.567498733493L)
     #   Value: 1024.73956631826
     coo = np.array([561955.0, 429158.5652])
-    coo_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    coo_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
     assert coo_map_heights.ok is True
     assert np.allclose(coo_map_heights.coordinates[0, 2], 1024.73956631826, atol=1e-6, rtol=0)
 
@@ -250,7 +240,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
     #   Location: (1011P,430.567498733493L)
     # Location is off this file! No further details to report.
     coo = np.array([561956.0, 429158.5652])
-    coo_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    coo_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
     assert coo_map_heights.ok is False
 
     # Edge case on the lower limit ->
@@ -259,7 +249,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
     #    Value: 952.09822577356
     # coordinates in raster crs
     coo = np.array([551842.0, 429158.5652])
-    coo_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    coo_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
     assert coo_map_heights.ok is True
     assert np.allclose(coo_map_heights.coordinates[0, 2], 952.09822577356, atol=1e-6, rtol=0)
 
@@ -269,7 +259,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
     #   Band 1:
     #     Value: 952.09822577356
     coo = np.array([551845.0, 429158.5652])
-    coo_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    coo_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
     assert coo_map_heights.ok is True
     assert np.allclose(coo_map_heights.coordinates[0, 2], 952.09822577356, atol=1e-6, rtol=0)
 
@@ -279,7 +269,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
     #   Band 1:
     #     Value: 952.275286000538
     coo = np.array([551847.5, 429158.5652])
-    coo_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    coo_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
     assert coo_map_heights.ok is True
     assert np.allclose(coo_map_heights.coordinates[0, 2], 952.275286000538, atol=1e-6, rtol=0)
 
@@ -287,7 +277,7 @@ def test_map_heights_from_coordinates(raster_mapper_full):
     #  Location: (0.299881352577358P,0.143421380911605L)
     #  Value: 1102.26696777344
     coo = np.array([551845.0, 433464.5652])
-    coo_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    coo_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
     assert coo_map_heights.ok is True
     assert np.allclose(coo_map_heights.coordinates[0, 2], 1102.26696777344, atol=1e-6, rtol=0)
 
@@ -305,11 +295,11 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     coo = np.array([[556538.9876, 429158.5652, 2000]])
     ray_vec = np.array([[0.0, 0.0, -1.0]])
 
-    result_vertical_ray = raster_mapper_full.georef_array.map_coordinates_from_rays(
+    result_vertical_ray = raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
 
-    result_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    result_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
 
     assert result_map_heights.ok is True
     assert result_vertical_ray.ok is True
@@ -326,11 +316,11 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     crs = CRS("EPSG:25833+5778")
     ray_vec = np.array([[0.0, 0.0, -1.0]])
 
-    result_vertical_ray = raster_mapper_full.georef_array.map_coordinates_from_rays(
+    result_vertical_ray = raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=crs
     )
 
-    result_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, crs)
+    result_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, crs)
 
     assert result_map_heights.ok is True
     assert result_vertical_ray.ok is True
@@ -359,8 +349,8 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     ray_vec = np.array([[0.0, 0.0, -1.0]])
     rays = np.zeros(coo.shape, dtype=float) + ray_vec
 
-    result_map_heights = raster_mapper_full.georef_array.map_heights_from_coordinates(coo, raster_mapper_full.crs)
-    result_vertical_ray = raster_mapper_full.georef_array.map_coordinates_from_rays(
+    result_map_heights = raster_mapper_full.map_heights_from_coordinates(coo, raster_mapper_full.crs)
+    result_vertical_ray = raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=rays, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
     assert result_map_heights.ok is True
@@ -380,7 +370,7 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     coo = np.array([[561950.9980217605, 429158.5652, 6000]])
     ray_vec = np.array([[0.0, 0.0, -1.0]])
 
-    result_vertical_ray = raster_mapper_full.georef_array.map_coordinates_from_rays(
+    result_vertical_ray = raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
 
@@ -394,7 +384,7 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     coo = np.array([[561950.998021761, 429158.5652, 6000]])
     ray_vec = np.array([[0.0, 0.0, -1.0]])
 
-    coo_map_heights = raster_mapper_full.georef_array.map_coordinates_from_rays(
+    coo_map_heights = raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
     assert coo_map_heights.ok is False
@@ -407,7 +397,7 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     #   Value: 1024.73956631826
     coo = np.array([[561955.0, 429158.5652, 6000]])
     ray_vec = np.array([[0.0, 0.0, -1.0]])
-    raster_mapper_full.georef_array.map_coordinates_from_rays(
+    raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
     assert coo_map_heights.ok is False
@@ -416,7 +406,7 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     #   Location: (0.299881352577358P,430.567498733493L)
     #   Value: 952.09822577356
     coo = np.array([[551845.0, 429158.5652, 6000]])
-    raster_mapper_full.georef_array.map_coordinates_from_rays(
+    raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
     assert coo_map_heights.ok is False
@@ -426,7 +416,7 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     #  Value: 1102.26696777344
     coo = np.array([[551845.0, 433464.5652, 6000]])
 
-    raster_mapper_full.georef_array.map_coordinates_from_rays(
+    raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
     assert coo_map_heights.ok is False
@@ -434,7 +424,7 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     #   Location: (0P,430.567498733493L)
     #    Value: 952.09822577356
     coo = np.array([[551842.0, 429158.5652, 6000]])
-    raster_mapper_full.georef_array.map_coordinates_from_rays(
+    raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
     assert coo_map_heights.ok is False
@@ -442,7 +432,7 @@ def test_map_heights_vertical_equal(raster_mapper_full):
     #   Location: (1011P,430.567498733493L)
     # Location is off this file! No further details to report.
     coo = np.array([[561956.0, 429158.5652, 6000]])
-    raster_mapper_full.georef_array.map_coordinates_from_rays(
+    raster_mapper_full.map_coordinates_from_rays(
         ray_vectors_crs_s=ray_vec, ray_start_crs_s=coo, crs_s=raster_mapper_full.crs
     )
     assert coo_map_heights.ok is False

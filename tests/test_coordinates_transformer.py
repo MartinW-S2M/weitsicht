@@ -1,5 +1,6 @@
 import numpy as np
 import pyproj.network
+import pytest
 from pyproj import CRS, Transformer
 
 from weitsicht.transform.coordinates_transformer import CoordinateTransformer
@@ -194,3 +195,41 @@ def test_transform():
     p_3_2_c = c_3_2.transform(p_wgs84_utm_egm2008)
     # Using our Coordinate Transformer it works
     print("correct:", p_3_2_c, " diff:", p_3_2_c - p_ref_lambert_gha)
+
+
+def test_transform_vector_identity():
+    crs = CRS("EPSG:25833").to_3d()
+    transformer = CoordinateTransformer(transformer=Transformer.from_crs(crs, crs, always_xy=True))
+
+    start = np.array(
+        [
+            [531547.645, 5287818.137, 2047.163],
+            [531557.645, 5287828.137, 2047.163],
+        ]
+    )
+    vectors = np.array([[1.0, 2.0, 3.0], [0.0, 0.0, 1.0]])
+
+    vec_t = transformer.transform_vector(start, vectors)
+    expected = vectors / np.linalg.norm(vectors, axis=1)[:, None]
+
+    assert vec_t.shape == (2, 3)
+    assert np.allclose(vec_t, expected, atol=1e-8, rtol=1e-8)
+
+
+def test_transform_vector_broadcasts_single_vector():
+    crs = CRS("EPSG:25833").to_3d()
+    transformer = CoordinateTransformer(transformer=Transformer.from_crs(crs, crs, always_xy=True))
+
+    start = np.array([[0.0, 0.0, 0.0], [10.0, 20.0, 30.0]])
+    vec_t = transformer.transform_vector(start, np.array([0.0, 0.0, 1.0]))
+
+    assert vec_t.shape == (2, 3)
+    assert np.allclose(vec_t, np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]), atol=1e-12, rtol=0.0)
+
+
+def test_transform_vector_rejects_zero_vectors():
+    crs = CRS("EPSG:25833").to_3d()
+    transformer = CoordinateTransformer(transformer=Transformer.from_crs(crs, crs, always_xy=True))
+
+    with pytest.raises(ValueError):
+        transformer.transform_vector(np.array([[0.0, 0.0, 0.0]]), np.array([0.0, 0.0, 0.0]))

@@ -111,6 +111,9 @@ if result.ok is True:
     # The returned coordinates will be in the CRS of the image
     print("Mapped Centerpoint (Principle point):", result.coordinates)
     print(f"GDS of center pixel {result.gsd:2.3f} m")
+    print("Normal (center):", result.normals[result.mask])
+    if result.gsd_per_point is not None:
+        print("GSD per point:", result.gsd_per_point[result.mask])
 assert result.ok is True  # for testing
 
 result_footprint = image.map_footprint(mapper=mapper)
@@ -121,6 +124,9 @@ if result_footprint.ok is True:
     print("Mapped Footprint:", result_footprint.coordinates)
     print(f"Mean GSD {result_footprint.gsd:2.3f} m")
     print(f"Area of footprint {result_footprint.area:2.0f} m²")
+    print("Normals:", result_footprint.normals)
+    if result_footprint.gsd_per_point is not None:
+        print("GSD per point:", result_footprint.gsd_per_point)
 assert result.ok is True  # for testing
 # Map densified footprint edges
 # Standard is that only the four corner points of the image are mapped.
@@ -135,4 +141,7 @@ if result_footprint.ok is True:
     print("Mapped Footprint:", result_footprint.coordinates)
     print(f"Mean GSD {result_footprint.gsd:2.3f} m")
     print(f"Area of footprint {result_footprint.area:2.0f} m²")
+    print("Normals:", result_footprint.normals)
+    if result_footprint.gsd_per_point is not None:
+        print("GSD per point:", result_footprint.gsd_per_point)
 assert result.ok is True  # for testing

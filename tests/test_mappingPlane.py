@@ -21,6 +21,7 @@ from pyproj import CRS
 
 from weitsicht import Issue
 from weitsicht.mapping.horizontal_plane import MappingHorizontalPlane
+from weitsicht.transform.coordinates_transformer import CoordinateTransformer
 
 
 def test_from_dict():
@@ -54,7 +55,7 @@ def test_map_coordinates_from_rays():
     mapping_result = mapper.map_coordinates_from_rays(
         ray_start_crs_s=np.array([0, 0, 100]),
         ray_vectors_crs_s=np.array([0, 0, -1]),
-        crs_s=CRS("EPSG:25833"),
+        crs_s=CRS("EPSG:25833").to_3d(),
     )
     assert mapping_result.ok is True
     assert np.linalg.norm(mapping_result.coordinates - np.array([0, 0, 43])) < 0.0000001
@@ -114,3 +115,39 @@ def test_map_heights_from_coordinates():
 
     assert mapping_result.ok is True
     assert np.linalg.norm(mapping_result.coordinates - np.array([602013.0, 5340384.696, 43.0])) < 0.00001
+
+
+def test_map_heights_from_coordinates_normals():
+
+    # Different CRS and 3d coordinates used
+    mapper = MappingHorizontalPlane(plane_altitude=400, crs=CRS(25833).to_3d())
+
+    coordinates_src = np.array([4086085.57226463, 1200516.4908149, 4732729.71533306])
+    mapping_result = mapper.map_heights_from_coordinates(coordinates_crs_s=coordinates_src, crs_s=CRS("EPSG:4978"))
+    assert mapping_result.ok is True
+    np.testing.assert_almost_equal(np.linalg.norm(mapping_result.coordinates - coordinates_src), 100)
+    up_point = mapping_result.coordinates + mapping_result.normals * 100
+    np.testing.assert_almost_equal(np.linalg.norm(up_point - coordinates_src), 0)
+
+
+def test_map_rays_normals():
+
+    # Different CRS and 3d coordinates used
+    mapper = MappingHorizontalPlane(plane_altitude=400, crs=CRS(25833).to_3d())
+
+    # ray more or less defined from UTM
+
+    coordinates_src = np.array([4086085.57226463, 1200516.4908149, 4732729.71533306])
+    vector = -np.array([0.63939621, 0.18785845, 0.74557474])  # test_map_heights_from_coordinates_normals
+    # -> so invert and change a little to go down
+    vector += np.array([0.2, -0.1, 0])
+    mapping_result = mapper.map_coordinates_from_rays(
+        ray_start_crs_s=coordinates_src, ray_vectors_crs_s=vector, crs_s=CRS("EPSG:4978")
+    )
+    assert mapping_result.ok is True
+    np.testing.assert_almost_equal(mapping_result.normals, np.array([[0.63939621, 0.18785845, 0.74557474]]), decimal=4)
+
+    c = CoordinateTransformer.from_crs(CRS(4978), CRS(25833).to_3d())
+    assert c is not None
+    should_be_vertical = c.transform_vector(mapping_result.coordinates, mapping_result.normals)
+    np.testing.assert_almost_equal(should_be_vertical, np.array([[0, 0, 1]]))

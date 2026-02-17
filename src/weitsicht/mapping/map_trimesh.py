@@ -227,7 +227,7 @@ class MappingTrimesh(MappingBase):
         # Trimesh to find intersection locations
         # It returns the intersection location, the index of the ray and the index of the triangle of the mesh
         assert isinstance(self._mesh, trimesh.Trimesh)
-        loc_crs_m_raw, index_ray, _ = self._mesh.ray.intersects_location(  # pyright: ignore[reportUnknownMemberType]
+        loc_crs_m_raw, index_ray, index_tri = self._mesh.ray.intersects_location(  # pyright: ignore[reportUnknownMemberType]
             ray_origins=ray_start_crs_m,
             ray_directions=rays_vector_crs_m,
             multiple_hits=False,
@@ -262,7 +262,65 @@ class MappingTrimesh(MappingBase):
         coo_crs_result.fill(np.nan)
         coo_crs_result[index_ray, :] = coo_crs_source
 
-        return MappingResultSuccess(ok=True, coordinates=coo_crs_result, mask=mask, crs=crs_s, issues=issue)
+        normals_result = np.empty(rays_vector.shape, dtype=float)
+        normals_result.fill(np.nan)
+
+        normals_crs_m = None
+        try:
+            normals_crs_m = np.asarray(self._mesh.face_normals, dtype=float)
+        except Exception:
+            normals_crs_m = None
+
+        # we will now check for normals
+        normals_hit_crs_s = np.full(loc_crs_m_raw.shape, np.nan, dtype=float)
+
+        if normals_crs_m is not None and normals_crs_m.size > 0:
+            normals_hit_crs_m = normals_crs_m[index_tri, :]
+
+            # Ensure normals face against the ray direction (towards ray origin).
+            dot = np.sum(normals_hit_crs_m * rays_vector_crs_m[index_ray, :], axis=1)
+            normals_hit_crs_m = np.where(dot[:, None] > 0.0, -normals_hit_crs_m, normals_hit_crs_m)
+
+            normal_len = np.linalg.norm(normals_hit_crs_m, axis=1)
+            valid_normals = np.isfinite(normals_hit_crs_m).all(axis=1) & (normal_len > 0.0)
+
+            if np.any(valid_normals):
+                normals_hit_crs_m_unit = normals_hit_crs_m[valid_normals, :] / normal_len[valid_normals, None]
+                if coo_trafo is not None:
+                    normals_hit_crs_s[valid_normals, :] = coo_trafo.transform_vector(
+                        loc_crs_m_raw[valid_normals, :],
+                        normals_hit_crs_m_unit,
+                        direction="inverse",
+                    )
+                else:
+                    normals_hit_crs_s[valid_normals, :] = normals_hit_crs_m_unit
+
+        # Fallback for missing/invalid normals: use inverse ray vector (in source CRS).
+        missing = ~np.isfinite(normals_hit_crs_s).all(axis=1)
+        if np.any(missing):
+            missing_idx = np.flatnonzero(missing)
+
+            # use the reverse ray_vector as normals as fallback
+            fallback = -rays_vector[index_ray[missing_idx], :]
+            fallback_len = np.linalg.norm(fallback, axis=1)
+
+            # check if fallback are valid
+            valid_fallback = np.isfinite(fallback).all(axis=1) & (fallback_len > 0.0)
+            if np.any(valid_fallback):
+                normals_hit_crs_s[missing_idx[valid_fallback], :] = (
+                    fallback[valid_fallback, :] / fallback_len[valid_fallback, None]
+                )
+
+        normals_result[index_ray, :] = normals_hit_crs_s
+
+        return MappingResultSuccess(
+            ok=True,
+            coordinates=coo_crs_result,
+            mask=mask,
+            normals=normals_result,
+            crs=crs_s,
+            issues=issue,
+        )
 
     def map_heights_from_coordinates(
         self,
@@ -270,7 +328,7 @@ class MappingTrimesh(MappingBase):
         crs_s: CRS | None = None,
         transformer: CoordinateTransformer | None = None,
     ) -> MappingResult:
-        """Sample heights by casting vertical rays against the mesh.
+        """Sample heights by casting vertical rays against the mesh. Vertical in the sense of vertical in the mapper crs
 
         :param coordinates_crs_s: Coordinates to sample (N×2 or N×3).
         :type coordinates_crs_s: ArrayNx3 | ArrayNx2
@@ -327,6 +385,23 @@ class MappingTrimesh(MappingBase):
         else:
             coo_crs_source[index, :] = result_mapper_crs.coordinates[index, :] * 1.0
 
+        normals_mapper_crs = np.full(coo_crs_source.shape, np.nan, dtype=float)
+        normals_mapper_crs[index, :] = np.array([0, 0, 1.0])
+        normals = np.full(coo_crs_source.shape, np.nan, dtype=float)
+        if coo_trafo is not None:
+            normals[index, :] = coo_trafo.transform_vector(
+                result_mapper_crs.coordinates[index, :],
+                normals_mapper_crs[index, :],
+                direction="inverse",
+            )
+        else:
+            normals = normals_mapper_crs
+
         return MappingResultSuccess(
-            ok=True, coordinates=coo_crs_source, mask=result_mapper_crs.mask, crs=crs_s, issues=result_mapper_crs.issues
+            ok=True,
+            coordinates=coo_crs_source,
+            mask=result_mapper_crs.mask,
+            normals=normals,
+            crs=crs_s,
+            issues=result_mapper_crs.issues,
         )

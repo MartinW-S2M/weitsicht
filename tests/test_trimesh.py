@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 from pyproj import CRS
 
+from weitsicht import Issue
 from weitsicht.exceptions import CRSInputError, CRSnoZaxisError, MappingError
 from weitsicht.mapping.base_class import MappingType
 from weitsicht.mapping.map_trimesh import MappingTrimesh
@@ -151,10 +152,23 @@ def test_map_coordinates_from_rays(mesh: MappingTrimesh):
     result = mesh.map_coordinates_from_rays(ray_start_crs_s=ray_start, ray_vectors_crs_s=ray_vector, crs_s=mesh.crs)
     assert result.ok is False
 
+    ray_vector = np.array([[1, 0, 0], [-1, 0, 0]])
+    result = mesh.map_coordinates_from_rays(ray_start_crs_s=ray_start, ray_vectors_crs_s=ray_vector, crs_s=mesh.crs)
+    assert result.ok is True
+    np.testing.assert_array_equal(result.mask, np.array([False, True]))
+    assert bool(np.any(np.isnan(result.coordinates[0]))) is True
+    assert bool(np.any(np.isnan(result.normals[0]))) is True
+    assert bool(np.all(np.isfinite(result.normals[1]))) is True
+    assert np.isclose(np.linalg.norm(result.normals[1]), 1.0)
+    assert Issue.NO_INTERSECTION in result.issues
+
     ray_vector = np.array([[-1, 0, 0], [-1, 0, 0]])
     result = mesh.map_coordinates_from_rays(ray_start_crs_s=ray_start, ray_vectors_crs_s=ray_vector, crs_s=mesh.crs)
 
     assert result.ok is True
+    assert result.normals.shape == result.coordinates.shape
+    assert bool(np.all(np.isfinite(result.normals[result.mask, :]))) is True
+    assert np.allclose(np.linalg.norm(result.normals[result.mask, :], axis=1), 1.0)
 
 
 def test_map_heights_from_coordinates(mesh: MappingTrimesh):
@@ -181,3 +195,6 @@ def test_map_heights_from_coordinates(mesh: MappingTrimesh):
     assert np.all(result.mask)
     if np.max(np.abs(result.coordinates[:, 2] - height_ref)) > 0.001:
         raise AssertionError()
+
+    # Here the both crs are equal, so it under all circumstances has to be 0,0,1 vector or the normals
+    np.testing.assert_almost_equal(result.normals, np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]]))

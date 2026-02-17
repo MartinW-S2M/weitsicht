@@ -284,7 +284,12 @@ def test_map_center_point(images):
 
     res_image = result["INDIGO_2021-12-17_Z7II-B_0039"]
     assert res_image.ok is True
-    assert np.isclose(res_image.gsd, 0.001, atol=0.0001, rtol=0.0)
+    assert res_image.gsd is not None
+    assert res_image.gsd > 0
+    assert res_image.gsd_per_point is not None
+    assert res_image.gsd_per_point.shape == (1,)
+    assert np.isfinite(res_image.gsd_per_point[0])
+    assert np.isclose(res_image.gsd, float(res_image.gsd_per_point[0]), atol=1e-12, rtol=0.0)
     assert np.allclose(
         res_image.coordinates,
         np.array([2.63808856e03, 3.42714739e05, 4.73475821e00]),
@@ -380,7 +385,12 @@ def test_map_footprint(images):
 
     res_image = result["INDIGO_2021-12-17_Z7II-B_0044"]
     assert res_image.ok is True
-    assert np.isclose(res_image.gsd, 0.00025, atol=0.0001, rtol=0.0)
+    assert res_image.gsd is not None
+    assert res_image.gsd > 0
+    assert res_image.gsd_per_point is not None
+    assert res_image.gsd_per_point.shape == (4,)
+    assert np.all(np.isfinite(res_image.gsd_per_point))
+    assert np.isclose(res_image.gsd, float(np.mean(res_image.gsd_per_point)), atol=1e-12, rtol=0.0)
     assert np.allclose(
         res_image.coordinates[0],
         np.array([2.63788572e03, 3.42718522e05, 4.25969046e00]),

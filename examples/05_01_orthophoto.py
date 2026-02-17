@@ -56,6 +56,9 @@ result_center = image.map_center_point()
 if result_center.ok is True:
     print("\nMapped center point:", result_center.coordinates)
     print(f"GSD at center pixel: {result_center.gsd:2.3f}")
+    print("Normal (center):", result_center.normals[result_center.mask])
+    if result_center.gsd_per_point is not None:
+        print("GSD per point:", result_center.gsd_per_point[result_center.mask])
 else:
     raise RuntimeError(f"Mapping center point failed: {result_center.error} ({result_center.issues})")
 
@@ -65,6 +68,9 @@ if result_footprint.ok is True:
     print("\nMapped footprint (corners):", result_footprint.coordinates)
     print(f"Area: {result_footprint.area:2.0f}")
     print(f"GSD:  {result_footprint.gsd:2.3f}")
+    print("Normals:", result_footprint.normals)
+    if result_footprint.gsd_per_point is not None:
+        print("GSD per point:", result_footprint.gsd_per_point)
 else:
     raise RuntimeError(f"Mapping footprint failed: {result_footprint.error} ({result_footprint.issues})")
 
@@ -75,6 +81,9 @@ if result_footprint_dense.ok is True:
     print("Number of points:", result_footprint_dense.coordinates.shape[0])
     print(f"Area: {result_footprint_dense.area:2.0f}")
     print(f"GSD:  {result_footprint_dense.gsd:2.3f}")
+    print("Normals:", result_footprint_dense.normals)
+    if result_footprint_dense.gsd_per_point is not None:
+        print("GSD per point:", result_footprint_dense.gsd_per_point)
 else:
     raise RuntimeError(
         f"Mapping densified footprint failed: {result_footprint_dense.error} ({result_footprint_dense.issues})"
@@ -113,6 +122,9 @@ result_map = image.map_points(result_proj.pixels)
 if result_map.ok is True:
     print("\nGarden mapped from projected pixels (with heights):", result_map.coordinates)
     print(f"Mean GSD: {result_map.gsd:2.3f}")
+    print("Normals:", result_map.normals)
+    if result_map.gsd_per_point is not None:
+        print("GSD per point:", result_map.gsd_per_point)
 else:
     raise RuntimeError(f"Mapping projected garden pixels failed: {result_map.error} ({result_map.issues})")
 
