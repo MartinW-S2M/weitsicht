@@ -1,6 +1,6 @@
 <p align="center">
   <a href=https://github.com/MartinW-S2M/weitsicht>
-  <img src="https://github.com/MartinW-S2M/weitsicht/blob/main/logos/weitsicht.svg" alt="weitsicht logo" width="240">
+  <img src="https://github.com/MartinW-S2M/weitsicht/blob/main/logos/weitsicht.svg?raw=true" alt="weitsicht logo" width="240">
 </p>
 
 # weitsicht
@@ -37,9 +37,9 @@ Currently, it is possible to use perspective and ortho-imagery and for mapping a
 
 <table>
   <tr>
-    <td><img src="docs/source/_static/raster_mapping.jpg" alt="Raster mapping example" width="80%"></td>
-    <td><img src="docs/source/_static/mesh_pic.jpg" alt="Mesh example" width="80%"></td>
-    <td><img src="docs/source/_static/example_images/image_batch_footprints.jpg" alt="Image batch footprints" width="100%"></td>
+    <td><img src="https://github.com/MartinW-S2M/weitsicht/blob/main/docs/source/_static/raster_mapping.jpg?raw=true" alt="Raster mapping example" width="80%"></td>
+    <td><img src="https://github.com/MartinW-S2M/weitsicht/blob/main/docs/source/_static/mesh_pic.jpg?raw=true" alt="Mesh example" width="80%"></td>
+    <td><img src="https://github.com/MartinW-S2M/weitsicht/blob/main/docs/source/_static/example_images/image_batch_footprints.jpg?raw=true" alt="Image batch footprints" width="100%"></td>
   </tr>
 </table>
 
