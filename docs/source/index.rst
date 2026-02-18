@@ -50,7 +50,7 @@ into images to get pixel coordinates.
 
 Capabilities:
 
-- **Mapping**, map the image's center-point and footprint (image extent) easily.
+- **Mapping**, map pixels or image's center-point and footprint (image extent) easily.
 - **Projection**, get the pixel position of 3D coordinates.
 - **CRS**, weitsicht handles coordinate system conversions (to some extent)
 - **Perspective Image and Camera**, mathematic model of your digital camera and pose.
@@ -187,6 +187,11 @@ Examples
         :link-type: ref
         :shadow: md
 
+    .. grid-item-card::  Map on Mesh
+        :img-bottom: /_static/example_images/footprint_mesh.jpg
+        :link: example-0103
+        :link-type: ref
+        :shadow: md
 
     .. grid-item-card::  Project 3D points
         :img-bottom: _static/example_images/pixel_image1_graffito_text.jpg
@@ -201,7 +206,7 @@ Examples
         :shadow: md
 
     .. grid-item-card::  Projections with image batch
-        :img-bottom: _static/example_images/batch_overview.jpg
+        :img-bottom: _static/example_images/ariel_project.jpg
         :link: example-0302
         :link-type: ref
         :shadow: md

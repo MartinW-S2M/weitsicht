@@ -23,9 +23,9 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="0"
      showgrid="false"
-     inkscape:zoom="2.2485996"
-     inkscape:cx="196.34443"
-     inkscape:cy="166.99283"
+     inkscape:zoom="1.59"
+     inkscape:cx="111.32075"
+     inkscape:cy="134.27673"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -315,12 +315,12 @@
   <g
      id="layer1">
     <rect
-       style="opacity:0.624561;fill:#747474;stroke:#101010;stroke-width:0.243363;stroke-linecap:square;stroke-opacity:1;fill-opacity:1"
+       style="opacity:0.624561;fill:#747474;fill-opacity:1;stroke:#101010;stroke-width:0.243363;stroke-linecap:square;stroke-opacity:1"
        id="rect910"
        width="43.256763"
        height="9.2811184"
-       x="2.5629122"
-       y="56.780415"
+       x="2.8457124"
+       y="49.695908"
        ry="0"
        transform="matrix(0.96792633,-0.2512342,-0.00833866,0.99996523,0,0)" />
     <rect
@@ -328,24 +328,25 @@
        id="rect910-2"
        width="6.0216479"
        height="3.0817077"
-       x="24.023705"
-       y="59.06596"
+       x="24.342995"
+       y="51.994198"
        ry="0"
        transform="matrix(0.96512379,-0.26179395,-0.00348585,0.99999392,0,0)" />
     <path
        style="fill:none;stroke:#050505;stroke-width:0.188547;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-start:url(#marker81694)"
-       d="M 16.506083,24.599654 V 55.336867"
-       id="path2879" />
+       d="M 14.842058,21.271604 16.838888,47.848754"
+       id="path2879"
+       sodipodi:nodetypes="cc" />
     <ellipse
        style="fill:#000000;stroke-width:0.0371026"
        id="path1-7-7"
-       cy="53.697128"
-       cx="15.349885"
+       cy="46.541821"
+       cx="15.68269"
        rx="0.20000629"
        ry="0.23424797" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.553395px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 13.330914,55.069412 c -0.0042,-3.38824 2.823561,-4.22653 3.254089,-4.239361"
+       d="M 13.663719,47.914104 C 13.659519,44.525864 15.988072,43.687574 16.4186,43.674743"
        id="path38938"
        sodipodi:nodetypes="cc" />
     <text
@@ -354,71 +355,64 @@
        x="180.36623"
        y="76.883804"
        id="text3-0"
-       transform="matrix(0.31287537,0,0,0.31287537,4.9299228,16.267931)"><tspan
+       transform="matrix(0.31287537,0,0,0.31287537,6.2611429,19.928786)"><tspan
          x="180.36623"
          y="76.883804"
-         id="tspan5"><tspan
+         id="tspan22"><tspan
    style="font-weight:bold;-inkscape-font-specification:'Arial Bold';stroke-width:0.499994"
-   id="tspan4">Set Z value to plane</tspan><tspan
+   id="tspan11">Set Z value for point</tspan><tspan
    y="76.883804"
-   id="tspan8"> </tspan></tspan></text>
+   id="tspan24"> </tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:6.62245px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
-       x="60.097328"
-       y="46.694168"
+       x="83.393684"
+       y="44.031731"
        id="text8-7"><tspan
          style="font-size:6.62245px;writing-mode:lr-tb;stroke-width:0.156436"
-         x="60.097328"
-         y="46.694168"
+         x="83.393684"
+         y="44.031731"
          id="tspan16-4"><tspan
            style="font-size:6.62245px;writing-mode:lr-tb;baseline-shift:sub;stroke-width:0.156436"
            id="tspan9-2">X</tspan><tspan
            style="font-size:4.3046px;baseline-shift:sub;stroke-width:0.156436"
            id="tspan18-7">3D</tspan></tspan><tspan
          style="font-size:6.62245px;writing-mode:lr-tb;stroke-width:0.156436"
-         x="60.097328"
-         y="54.972233"
+         x="83.393684"
+         y="52.309795"
          id="tspan17-7" /></text>
-    <text
-       xml:space="preserve"
-       style="font-size:2.42823px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
-       x="59.367458"
-       y="51.470692"
-       id="text3-2-9"><tspan
-         style="text-align:center;writing-mode:lr-tb;direction:ltr;text-anchor:middle;stroke-width:0.156436"
-         x="59.378628"
-         y="51.470692"
-         id="tspan7-5-8">CRS Mapper</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:7.761px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0714366px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;white-space:pre;inline-size:122.873;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499993;stroke-dasharray:2.99996, 0.999987;paint-order:markers fill stroke"
        x="239.55748"
        y="109.46885"
        id="text3-5"
-       transform="matrix(0.31287537,0,0,0.31287537,11.339377,21.954418)"><tspan
+       transform="matrix(0.31287537,0,0,0.31287537,10.507364,18.12716)"><tspan
          x="239.55748"
          y="109.46885"
-         id="tspan13"><tspan
+         id="tspan26"><tspan
    style="stroke-width:0.499994"
-   id="tspan9">Transformation of </tspan><tspan
-   style="stroke-width:0.499994"
-   id="tspan11">3D</tspan> <tspan
-   style="stroke-width:0.499994"
-   id="tspan12">coordinates</tspan><tspan
+   id="tspan25">Transformation of updated</tspan><tspan
    y="109.46885"
-   id="tspan14"> </tspan></tspan><tspan
+   id="tspan28"> </tspan></tspan><tspan
          x="239.55748"
          y="119.1701"
-         id="tspan19"><tspan
+         id="tspan32"><tspan
    style="stroke-width:0.499994"
-   id="tspan15">from Mapper</tspan> <tspan
-   style="stroke-width:0.499994"
-   id="tspan17">CRS </tspan><tspan
-   style="stroke-width:0.499994"
-   id="tspan18">to Source CRS.</tspan><tspan
+   id="tspan29">coordinates and normal vector</tspan><tspan
    y="119.1701"
-   id="tspan20"> </tspan></tspan></text>
+   id="tspan34"> </tspan></tspan><tspan
+         x="239.55748"
+         y="128.87135"
+         id="tspan39"><tspan
+   style="stroke-width:0.499994"
+   id="tspan36">from Mapper</tspan> <tspan
+   style="stroke-width:0.499994"
+   id="tspan37">CRS </tspan><tspan
+   style="stroke-width:0.499994"
+   id="tspan38">to Source CRS.</tspan><tspan
+   y="128.87135"
+   id="tspan40"> </tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:7.761px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0714366px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;white-space:pre;inline-size:117.453;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499993;stroke-dasharray:2.99996, 0.999987;paint-order:markers fill stroke"
@@ -428,55 +422,51 @@
        transform="matrix(0.31287537,0,0,0.31287537,10.7572,16.606535)"><tspan
          x="240.42746"
          y="12.144962"
-         id="tspan23"><tspan
-   style="stroke-width:0.499994"
-   id="tspan21">Transform ray start point 2D/</tspan><tspan
-   style="stroke-width:0.499994"
-   id="tspan22">3D</tspan><tspan
-   y="12.144962"
-   id="tspan24"> </tspan></tspan><tspan
+         id="tspan42"><tspan
+           style="stroke-width:0.499994"
+           id="tspan41">Transform ray start point 3D or</tspan><tspan
+           y="12.144962"
+           id="tspan43"> </tspan></tspan><tspan
          x="240.42746"
          y="21.846213"
-         id="tspan29"><tspan
-   style="stroke-width:0.499994"
-   id="tspan25">coordinates </tspan><tspan
-   style="stroke-width:0.499994"
-   id="tspan26">from Source</tspan> <tspan
-   style="stroke-width:0.499994"
-   id="tspan27">CRS </tspan><tspan
-   style="stroke-width:0.499994"
-   id="tspan28">to</tspan><tspan
-   y="21.846213"
-   id="tspan30"> </tspan></tspan><tspan
+         id="tspan45"><tspan
+           style="stroke-width:0.499994"
+           id="tspan44">last intersection point from</tspan><tspan
+           y="21.846213"
+           id="tspan46"> </tspan></tspan><tspan
          x="240.42746"
          y="31.547463"
-         id="tspan32"><tspan
+         id="tspan50"><tspan
    style="stroke-width:0.499994"
-   id="tspan31">Mapper CRS.</tspan><tspan
+   id="tspan47">Source</tspan> <tspan
+   style="stroke-width:0.499994"
+   id="tspan48">CRS to</tspan> <tspan
+   style="stroke-width:0.499994"
+   id="tspan49">Mapper CRS.</tspan><tspan
    y="31.547463"
-   id="tspan33"> </tspan></tspan></text>
+   id="tspan51"> </tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:6.62245px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
-       x="59.209236"
-       y="58.495373"
+       x="58.876431"
+       y="56.332142"
        id="text8-2"><tspan
          style="writing-mode:lr-tb;baseline-shift:baseline;stroke-width:0.156436"
-         x="59.209236"
-         y="58.495373"
+         x="58.876431"
+         y="56.332142"
          id="tspan16-3">T<tspan
    style="font-size:4.30459px;baseline-shift:sub;stroke-width:0.156436"
    id="tspan10">M-S</tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:5.2916px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
-       x="59.253223"
-       y="70.196648"
+       x="53.595539"
+       y="70.030235"
        id="text8"><tspan
          style="font-size:5.2916px;writing-mode:lr-tb;baseline-shift:baseline;stroke-width:0.156436"
-         x="59.253223"
-         y="70.196648"
-         id="tspan16">initial plane</tspan></text>
+         x="53.595539"
+         y="70.030235"
+         id="tspan16">plane intersection</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:2.42823px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
@@ -529,8 +519,6 @@
          y="69.728874"
          id="tspan16-5-6">P<tspan
    style="font-size:4.30459px;baseline-shift:sub;stroke-width:0.156436"
-   id="tspan7-8">2D</tspan>/P<tspan
-   style="font-size:4.30459px;baseline-shift:sub;stroke-width:0.156436"
    id="tspan6-5">3D</tspan></tspan></text>
     <text
        xml:space="preserve"
@@ -564,37 +552,55 @@
     <text
        xml:space="preserve"
        style="font-size:5.2916px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
-       x="68.615356"
-       y="84.150742"
+       x="70.445778"
+       y="87.145988"
        id="text8-2-3-94"><tspan
          style="font-size:5.2916px;writing-mode:lr-tb;baseline-shift:baseline;stroke-width:0.156436"
-         x="68.615356"
-         y="84.150742"
+         x="70.445778"
+         y="87.145988"
          id="tspan16-3-3-8">Repeat till change is minimal</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:3.9687px;line-height:1;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;white-space:pre;inline-size:28.0118;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
+       style="font-size:2.6458px;line-height:1;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;white-space:pre;inline-size:42.988;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
        x="23.379385"
        y="19.207138"
        id="text8-2-3-9"
-       transform="translate(-15.013231,14.433495)"><tspan
+       transform="translate(-8.6899356,-4.2035866)"><tspan
          x="23.379385"
          y="19.207138"
-         id="tspan35"><tspan
-   style="baseline-shift:baseline;stroke-width:0.156436"
-   id="tspan34">Normal</tspan>
-</tspan><tspan
-         x="23.379385"
-         y="23.175838"
-         id="tspan37"><tspan
+         id="tspan53"><tspan
            style="baseline-shift:baseline;stroke-width:0.156436"
-           id="tspan36">Vector
+           id="tspan52">Normal Vector
 </tspan></tspan><tspan
          x="23.379385"
-         y="27.144538"
-         id="tspan39"><tspan
+         y="21.852939"
+         id="tspan55"><tspan
            style="baseline-shift:baseline;stroke-width:0.156436"
-           id="tspan38">(0,0,1)</tspan></tspan></text>
+           id="tspan54">transformed from
+</tspan></tspan><tspan
+         x="23.379385"
+         y="24.498738"
+         id="tspan57"><tspan
+           style="baseline-shift:baseline;stroke-width:0.156436"
+           id="tspan56">mapper CRS</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.6458px;line-height:1;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:start;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;inline-size:141.831;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
+       x="-47.53611"
+       y="19.207138"
+       id="text8-2-3-9-4"
+       transform="translate(49.514293,76.298177)"><tspan
+         x="-47.53611"
+         y="19.207138"
+         id="tspan58">The red points are transformed to Mapper CRS and are used to
+</tspan><tspan
+         x="-47.53611"
+         y="21.852939"
+         id="tspan59">build the plane point and normal vector. That plane point and normal vector are
+</tspan><tspan
+         x="-47.53611"
+         y="24.498738"
+         id="tspan60">then transformed to Source CRS and used for the ray plane intersection.</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:6.62245px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';text-align:center;letter-spacing:0.0223508px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.156435;stroke-dasharray:0.938614, 0.312871;paint-order:markers fill stroke"
@@ -625,19 +631,19 @@
          id="tspan7-5-8-1">CRS Mapper</tspan></text>
     <path
        style="fill:none;stroke:#1797c8;stroke-width:0.198663;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker2008-7)"
-       d="M 22.704892,60.243836 15.715949,75.547505"
+       d="M 23.037697,53.088528 16.048754,68.392197"
        id="path2281"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#1797c8;stroke-width:0.198663;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 39.126664,20.946561 25.42823,53.502983"
+       d="M 39.459469,13.791253 25.761035,46.347675"
        id="path2281-2"
        sodipodi:nodetypes="cc" />
     <circle
        style="fill:#000000;stroke-width:0.0614004"
        id="path1"
-       cx="-39.564781"
-       cy="20.147457"
+       cx="-39.897587"
+       cy="12.992149"
        transform="scale(-1,1)"
        r="0.66145003" />
     <text
@@ -655,65 +661,65 @@
    id="tspan67473">PRJ</tspan></tspan></text>
     <path
        style="fill:none;stroke:#6e6e6e;stroke-width:0.17846;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.35692, 0.35692;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 39.319802,20.867033 V 50.673597"
+       d="M 39.652607,13.711725 V 43.518289"
        id="path2879-4"
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.2916px;font-family:Sans;-inkscape-font-specification:'Sans, Normal';font-variant-ligatures:normal;font-variant-position:super;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;baseline-shift:baseline;fill:#1797c8;fill-opacity:1;stroke:none;stroke-width:0.425552;stroke-opacity:1"
-       x="7.3785071"
-       y="67.056931"
+       x="7.7240796"
+       y="60.165985"
        id="text1-8"
        transform="scale(0.96305369,1.0383637)"><tspan
          id="tspan1-8"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.2916px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;baseline-shift:baseline;fill:#1797c8;fill-opacity:1;stroke:none;stroke-width:0.425552"
-         x="7.3785071"
-         y="67.056931">Ray</tspan></text>
+         x="7.7240796"
+         y="60.165985">Ray</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.17496px;line-height:0.7;font-family:Sans;-inkscape-font-specification:'Sans, Normal';font-variant-ligatures:normal;font-variant-position:super;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;baseline-shift:baseline;fill:#1797c8;fill-opacity:1;stroke:none;stroke-width:0.425552;stroke-opacity:1"
-       x="26.247616"
-       y="59.479248"
+       x="26.593189"
+       y="52.588303"
        id="text1-8-3"
        transform="scale(0.96305369,1.0383637)"><tspan
          sodipodi:role="line"
          id="tspan1"
-         x="26.247616"
-         y="59.479248"
+         x="26.593189"
+         y="52.588303"
          style="font-size:3.17496px;line-height:0.7"><tspan
            id="tspan1-8-2"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.17496px;line-height:0.7;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;baseline-shift:baseline;fill:#1797c8;fill-opacity:1;stroke:none;stroke-width:0.425552"
-           x="26.247616"
-           y="59.479248">small</tspan></tspan><tspan
+           x="26.593189"
+           y="52.588303">small</tspan></tspan><tspan
          sodipodi:role="line"
          id="tspan2"
-         x="26.247616"
-         y="61.738472"
+         x="26.593189"
+         y="54.847527"
          style="font-size:3.17496px;line-height:0.7">vertical</tspan><tspan
          sodipodi:role="line"
-         x="26.247616"
-         y="63.960945"
+         x="26.593189"
+         y="57.07"
          style="font-size:3.17496px;line-height:0.7"
          id="tspan3">corrections</tspan></text>
     <circle
        style="fill:#ff0000;fill-opacity:1;stroke-width:0.212427;paint-order:markers fill stroke"
        id="path2"
-       cx="-24.297588"
-       cy="56.36916"
+       cx="-24.630394"
+       cy="49.213852"
        transform="scale(-1,1)"
        r="0.66145003" />
     <circle
        style="fill:#ff0000;fill-opacity:1;stroke-width:0.212427;paint-order:markers fill stroke"
        id="path2-4"
-       cx="-25.444216"
-       cy="53.840714"
+       cx="-25.777021"
+       cy="46.685406"
        transform="scale(-1,1)"
        r="0.66145003" />
     <circle
        style="fill:#ff0000;fill-opacity:1;stroke-width:0.212427;paint-order:markers fill stroke"
-       id="path2-1"
-       cx="-39.187511"
-       cy="50.673595"
+       id="path2-1-2"
+       cx="-39.985691"
+       cy="12.837123"
        transform="scale(-1,1)"
        r="0.66145003" />
   </g>

@@ -76,7 +76,7 @@ All examples can be found under "examples" in the root directory of that repo.
         :shadow: md
 
     .. grid-item-card::  Map on Mesh
-        :img-bottom: /_static/example_images/footprint_mesh.JPG
+        :img-bottom: /_static/example_images/footprint_mesh.jpg
         :link: example-0103
         :link-type: ref
         :shadow: md
@@ -109,8 +109,8 @@ All examples can be found under "examples" in the root directory of that repo.
 
 Helper Workflow
 ===========================
-These example show how to use the classes for images and mapping directly,
-for example if you have all the information needed from a service provider, a logfile or a SFM package.
+These example shows a workflow where georeference information is extraced from image's metadata and
+used to map objects and find these objects in other images.
 
 
 .. grid:: 2 2 4 4

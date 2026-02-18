@@ -65,7 +65,7 @@ def test_map_coordinates_from_rays():
     mapping_result = mapper.map_coordinates_from_rays(
         ray_start_crs_s=np.array([0, 0, 100]),
         ray_vectors_crs_s=np.array([0, 0, 1]),
-        crs_s=CRS("EPSG:25833"),
+        crs_s=CRS("EPSG:25833").to_3d(),
     )
     assert mapping_result.ok is False
 
@@ -73,7 +73,7 @@ def test_map_coordinates_from_rays():
     mapping_result = mapper.map_coordinates_from_rays(
         ray_start_crs_s=np.array([[0, 0, 100], [0, 0, 100]]),
         ray_vectors_crs_s=np.array([[0, 0, 1], [0, 0, -1]]),
-        crs_s=CRS("EPSG:25833"),
+        crs_s=CRS("EPSG:25833").to_3d(),
     )
     assert mapping_result.ok is True
     assert bool(np.any(np.isnan(mapping_result.coordinates[0]))) is True
@@ -84,7 +84,7 @@ def test_map_coordinates_from_rays():
     mapping_result = mapper.map_coordinates_from_rays(
         ray_start_crs_s=np.array([0, 0, 100]),
         ray_vectors_crs_s=np.array([0.3, 0.4, 0.0]),
-        crs_s=CRS("EPSG:25833"),
+        crs_s=CRS("EPSG:25833").to_3d(),
     )
     assert mapping_result.ok is False
 
@@ -93,7 +93,7 @@ def test_map_coordinates_from_rays():
         mapper.map_coordinates_from_rays(
             ray_start_crs_s=np.array([[0, 0, 150], [0, 0, 100]]),
             ray_vectors_crs_s=np.array([0, 0, -1]),
-            crs_s=CRS("EPSG:25833"),
+            crs_s=CRS("EPSG:25833").to_3d(),
         )
 
 
@@ -103,7 +103,7 @@ def test_map_heights_from_coordinates():
     mapper = MappingHorizontalPlane.from_dict({"type": "horizontalPlane", "plane_altitude": 43.0, "crs": "EPSG:4979"})
 
     coordinates = np.array([602013.0, 5340384.696, 400.0])
-    mapping_result = mapper.map_heights_from_coordinates(coordinates_crs_s=coordinates, crs_s=CRS("EPSG:25833"))
+    mapping_result = mapper.map_heights_from_coordinates(coordinates_crs_s=coordinates, crs_s=CRS("EPSG:25833").to_3d())
     assert mapping_result.ok is True
     assert np.linalg.norm(mapping_result.coordinates - np.array([602013.0, 5340384.696, 43.0])) < 0.00001
 
@@ -111,7 +111,7 @@ def test_map_heights_from_coordinates():
     mapper = MappingHorizontalPlane.from_dict({"type": "horizontalPlane", "plane_altitude": 43.0, "crs": "EPSG:25833"})
 
     coordinates = np.array([602013.0, 5340384.696])
-    mapping_result = mapper.map_heights_from_coordinates(coordinates_crs_s=coordinates, crs_s=CRS("EPSG:25833"))
+    mapping_result = mapper.map_heights_from_coordinates(coordinates_crs_s=coordinates, crs_s=CRS("EPSG:25833").to_3d())
 
     assert mapping_result.ok is True
     assert np.linalg.norm(mapping_result.coordinates - np.array([602013.0, 5340384.696, 43.0])) < 0.00001

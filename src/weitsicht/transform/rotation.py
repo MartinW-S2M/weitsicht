@@ -32,6 +32,9 @@ logger = logging.getLogger(__name__)
 class Rotation:
     """Represent a 3×3 rotation matrix and convert to/from common photogrammetry angle notations.
 
+    R as defined in docu: Vworld = R @ Vcam
+    or: Xcam = R.T @ Xworld
+
     Supported angle sets:
 
     - **OPK**: omega/phi/kappa (radians/degrees)
@@ -189,7 +192,8 @@ class Rotation:
             sin_kappa = np.sin(kappa)
             cos_kappa = np.cos(kappa)
 
-            # This is R, not R.T !
+            # This is R as defined in docu: Vworld = R @ Vcam
+            # or: Xcam = R.T @ Xworld
             opk_rot_mat = np.array(
                 [
                     [cos_phi * cos_kappa, -cos_phi * sin_kappa, sin_phi],
@@ -285,8 +289,8 @@ class Rotation:
             sin_kappa = np.sin(kappa)
             cos_kappa = np.cos(kappa)
 
-            # This is R, not R.T !
-            # R = Rz(alpha) * Ry(zeta) * Rz(kappa)
+            # This is R as defined in docu: Vworld = R @ Vcam
+            # or: Xcam = R.T @ Xworld
             apk_rot_mat = np.array(
                 [
                     [

@@ -58,6 +58,14 @@ Currently, it is possible to use perspective and ortho-imagery and for mapping a
 - **ImageBatch**, container class to perform tasks on multiple images. Find all images where coordinates are visible. Map for all images footprint and centerpoint.
 - **Meta-Data**, use image’s meta-data (EXIF, XMP) to estimate camera model and image pose.
 
+## Use cases
+- You have drone/UAS imagery and want to map objects detected within the image (hand-digitized or from AI), e.g. to geolocate wildlife sightings.
+- You have a 3D point (or a track) and want to find all images where it is visible and where it falls in each image (projection).
+- You processed a survey with SfM/photogrammetry and want to use camera poses/outputs in a geospatial (GIS) context.
+- You have images with direct georeferencing (INS - IMU + GNSS) and want quick footprints/center points (and monoplotting) without running full SfM.
+- You have a 3D mesh (e.g. from reconstruction) and want to map image pixels onto the mesh (e.g. graffiti outlines).
+- You have orthophotos and want to go from map coordinates to pixels (and vice versa) for digitization/measurement workflows.
+
 
 ## Table of Contents
 - [Installation](#installation)
@@ -115,8 +123,7 @@ weitsicht has been tested on Windows, Linux and MacOS, and probably also runs on
 
 Additionally, to provide a workflow for drone imagery the metadata from images has to be extracted.
 You can use Phil Harvey's exiftool together with [PyExifTool](https://sylikc.github.io/pyexiftool/index.html).
-Although long‑term maintenance of those packages is not clear, Phil Harvey's tool provides to date the most complete metadata
-reader for most image formats, including raw camera files. In ``weitsicht`` provides an interface for different exiftool wrappers, but currently only a parser for tags from PyExifTool is implemented. A exiv2 parser would be very welcome as contributions.
+Phil Harvey's tool provides one of the most complete metadata reader for most image formats, including raw camera files. `weitsicht` provides an interface to implement different meta-data reader, but currently only a parser for tags from PyExifTool is implemented. A exiv2 parser would be very welcome as contributions.
 
 ## Documentation
 The current documentation is available at [weitsicht.readthedocs.io](https://weitsicht.readthedocs.io)
@@ -124,20 +131,20 @@ There you will also find information about the mathematical background and defin
 ANy contributions are welcome for extending documentation.
 
 ## Brief History
-weitsicht was formerly part of **WISDAM (Wildlife Imagery Survey – Detection and Mapping)** (and its predecessor DugongDetector) but is now provided as its own python package.
-It is used as the photogrammetry/mapping core of WISDAMapp to map images, objects and project them back into images.
-This allows the users to assign groups, spatial metadata and find resights.
+`weitsicht` originated from several loosely connected scripts and tools I developed in research and open-source projects. Parts of that code also went into **WISDAM (Wildlife Imagery Survey – Detection and Mapping)** (and its predecessor DugongDetector). It served as the photogrammetry/mapping core of WISDAMapp to map images and objects and to project them back into images. This enables users to assign groups, add spatial metadata, and find resights.
 
-**WISDAMapp (Wildlife Imagery Survey – Detection and Mapping)** is a python GUI framework based on QT for the digitization and metadata enrichment of objects
-digitized in images and ortho-photos. Geo-referenced imagery can be used to map digitized objects to 3D or project them back into images for the purpose of grouping
+When WISDAM underwent a major refactoring in 2024/2025, I decided it was a good time to split the GUI and the geometric foundation into two parts. At the same time, there was growing interest in these functions from researchers with little to no background in photogrammetry/computer vision who wanted to work with aerial (especially drone) imagery without diving into packages like ``OpenCV`` or SfM tools.
 
-**The WISDAMapp repository can be found under http://www.github.com/WISDAMapp/**
+**WISDAMapp (Wildlife Imagery Survey – Detection and Mapping)** is a python GUI framework based on QT for the digitization and metadata enrichment of objects digitized in images and ortho-photos. Geo-referenced imagery can be used to map digitized objects to 3D or project them back into images for the purpose of grouping. Its used in wildlife monitoring where statistics about the appearance of certain animals are of importance.
 
-Currently WISDAMapp undergoes refactoring to switch from the old WISDAMcore to ``weitsicht``
+**The WISDAMapp repository can be found under http://www.github.com/WISDAMapp/** and the project webpage under http://wisdamapp.org .
+
+The temporary package was called WISDAMcore and is provided for legacy reasons as long as WISDAMapp is not fully switched to **weitsicht**.
+Currently WISDAMapp undergoes refactoring to switch from the old WISDAMcore to **weitsicht**.
 
 
 ## Goals
-The intention of weitsicht is to provide the community an easy-to-use package to deal with geo-referenced imagery.
+The intention of ` weitsicht` is to provide the community an easy-to-use package to deal with geo-referenced imagery.
 No matter if environmental science, geomatic, GIS or drone community more and more imagery is available (mostly from drones/UAS) which can be used to perform mapping operations.
 
 Many users can’t leverage their imagery beyond basic tasks without photogrammetry/SfM software; we aim to bridge that gap.
@@ -166,7 +173,7 @@ Please find more info in CONTRIBUTION.md
 > [!IMPORTANT]
 > weitsicht uses pyproj and using the setting always_xy for all Transformers.
 
-weitsicht was designed with flexibility and extensibility in mind.
+`weitsicht`  was designed with flexibility and extensibility in mind.
 The library consists of a few classes, each with increasingly more features.
 
 * ``weitsicht.camera`` is the sub package for camera models (e.g. OpenCV camera model)
@@ -270,7 +277,7 @@ The development has been supported by:
 * [WISDAMapp community](https://wisdamapp.org)
 
 ## Licence
-weitsicht is licensed under the Apache License, Version 2.0 (Apache-2.0).
+`weitsicht` is licensed under the Apache License, Version 2.0 (Apache-2.0).
 
 See `LICENSE` for the full license text.
 

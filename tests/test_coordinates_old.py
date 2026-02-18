@@ -25,7 +25,7 @@ from weitsicht.transform.coordinates_old import CoordinatesTransformer
 
 def test_from_crs():
     source_crs = CRS(4979)
-    target_crs = CRS(25833)
+    target_crs = CRS(25833).to_3d()
     # Test for Array 1x3
     points = np.array([16, 48, 100])
     transformer = CoordinatesTransformer.from_crs(crs_s=source_crs, crs_t=target_crs, points=points)
@@ -38,7 +38,7 @@ def test_from_crs_fails():
     source_crs = CRS(4979)
     points = np.array([48, 400, 0])
 
-    target_crs = CRS(25833)
+    target_crs = CRS(25833).to_3d()
 
     with pytest.raises(CoordinateTransformationError):
         CoordinatesTransformer.from_crs(crs_s=source_crs, crs_t=target_crs, points=points)
@@ -135,7 +135,7 @@ def test_to_crs_fails():
     source_crs = CRS(4979)
     points = np.array([48, 400, 0])
 
-    target_crs = CRS(25833)
+    target_crs = CRS(25833).to_3d()
 
     transformer = CoordinatesTransformer(crs=source_crs, points=points)
 

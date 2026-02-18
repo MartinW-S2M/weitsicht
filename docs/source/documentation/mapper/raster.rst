@@ -72,8 +72,8 @@ Core methods
 Height sampling (coordinates → heights)
 ------------------------------------------
 
-``map_heights_from_coordinates(...)`` takes (x, y) (or (x, y, z)) coordinates and returns 3D coordinates with an
-interpolated height from the raster.
+``map_heights_from_coordinates(...)`` takes (x, y) (or (x, y, z)) coordinates and returns 3D coordinates
+with a bilinear interpolated height from the raster.
 
 Notes:
 
@@ -111,11 +111,17 @@ and for each ray the mapper searches for a parameter :math:`t` such that:
 
 Implementation idea (in words):
 
-1. Choose an initial plane height guess :math:`z_i` between the camera height and the raster height below the ray start.
-2. Intersect the ray with the horizontal plane :math:`z = z_i` (ray–plane intersection).
-3. Transform that intersection point into the raster CRS and sample the raster height at its :math:`(x, y)`.
-4. Transform the sampled height back to the source CRS (important when vertical transformations are involved).
-5. Update the plane height guess toward the sampled height (a damped update is used to reduce oscillation) and repeat.
+1. Transform the ray start point (:math:`X_c,Y_c,Z_c`) (projection center) into the raster crs (:math:`x_c,y_c,z_c`).
+2. Get the raster height :math:`z_r` for :math:`x_c,y_c`.
+3. Guess intial plane height :math:`z_i` between the camera height :math:`z_c` and the raster height :math:`z_r`.
+4. The plane point (:math:`x_i,y_i,z_i`) is now initial (:math:`x_c,y_c,z_i`).
+5. Transform that plane point (:math:`x_i,y_i,z_i`) and vertical vector back to source crs (:math:`X_p,Y_p,Z_p`)
+6. Intersect the ray with that plane (ray–plane intersection) -> result intersection point (:math:`X_i,Y_i,Z_i`)
+7. Transform that intersection point (:math:`X_i,Y_i,Z_i`) into the raster CRS (:math:`x_i,y_i,z_i`).
+8. Sample the raster height at its :math:`(x_i, y_i)`.
+9. Update the plane height :math:`z_i` guess toward the sampled height (a damped update is used to reduce oscillation).
+10. Repeat from (5) on
+
 
 Stopping criteria:
 

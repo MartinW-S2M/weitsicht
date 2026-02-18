@@ -33,7 +33,7 @@ Import Modules
 ---------------
 First we will import all necessary Modules. The Raster Mapper module will be used for mapping.
 
-.. literalinclude:: ../../../../examples/01_01_map_footrpint_centerpoint.py
+.. literalinclude:: ../../../../examples/01_01_map_footprint_centerpoint.py
    :language: python
    :start-after: # Importing
    :end-before:  # PyProj
@@ -42,7 +42,7 @@ First we will import all necessary Modules. The Raster Mapper module will be use
 ------
 PYPROJ
 ------
-.. literalinclude:: ../../../../examples/01_01_map_footrpint_centerpoint.py
+.. literalinclude:: ../../../../examples/01_01_map_footprint_centerpoint.py
    :language: python
    :start-after: # PyProj
    :end-before:  # Camera Model
@@ -51,7 +51,7 @@ PYPROJ
 ------------
 Camera Model
 ------------
-.. literalinclude:: ../../../../examples/01_01_map_footrpint_centerpoint.py
+.. literalinclude:: ../../../../examples/01_01_map_footprint_centerpoint.py
    :language: python
    :start-after: # Camera Model
    :end-before:  # Image Class
@@ -59,7 +59,7 @@ Camera Model
 -----------
 Image Class
 -----------
-.. literalinclude:: ../../../../examples/01_01_map_footrpint_centerpoint.py
+.. literalinclude:: ../../../../examples/01_01_map_footprint_centerpoint.py
    :language: python
    :start-after: # Image Class
    :end-before:  # Mapper Class
@@ -67,7 +67,7 @@ Image Class
 ------------
 Mapper Class
 ------------
-.. literalinclude:: ../../../../examples/01_01_map_footrpint_centerpoint.py
+.. literalinclude:: ../../../../examples/01_01_map_footprint_centerpoint.py
    :language: python
    :start-after: # Mapper Class
    :end-before:  # Results Image 1
@@ -76,7 +76,7 @@ Mapper Class
 -------------------------------------
 Map images footprint and center point
 -------------------------------------
-.. literalinclude:: ../../../../examples/01_01_map_footrpint_centerpoint.py
+.. literalinclude:: ../../../../examples/01_01_map_footprint_centerpoint.py
    :language: python
    :start-after: # Results Image 1
    :end-before:  # Map densified footprint edges
@@ -92,7 +92,7 @@ The mapped footprint and center point of that image (red dots are the mapped poi
 -------------------------
 Densify mapped footprint
 -------------------------
-.. literalinclude:: ../../../../examples/01_01_map_footrpint_centerpoint.py
+.. literalinclude:: ../../../../examples/01_01_map_footprint_centerpoint.py
    :language: python
    :start-after:  # Map densified footprint edges
 

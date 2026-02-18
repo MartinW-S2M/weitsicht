@@ -33,7 +33,24 @@ Always check for issues to catch reasons for invalid results
 
 Errors
 ======
-# TODO Check for Errors
+Most functions either raise a :class:`~weitsicht.exceptions.WeitsichtError` (invalid inputs / missing state) **or**
+return a result object (``MappingResult`` / ``ProjectionResult``) that can be a ``ResultFailure``.
+
+.. code-block:: python
+
+  from weitsicht import WeitsichtError
+
+  try:
+      res = image.map_points([[200, 300], [50, 50]])
+  except WeitsichtError as err:
+      print("weitsicht error:", err)
+  else:
+      if not res.ok:
+          print("mapping failed:", res.error, "issues:", res.issues)
+      else:
+          coords_valid = res.coordinates[res.mask]  # keep input order
+
+See :doc:`error_handling` for more patterns and the exception hierarchy.
 
 
 Perspective Images
@@ -72,7 +89,7 @@ CRS quick reference
    * - Geocentric Cartesian (ECEF) (e.g. ``EPSG:4978``)
      - OK
      - Not possible - Rare (never seen such thing)
-     - Not possible at the moment **(1)**
+     - Limited **(1)**
      - Not possible - Rare (never seen such thing)
      - OK
    * - Geodetic lon/lat (degrees) (e.g. ``EPSG:4326`` / ``EPSG:4979``)
@@ -96,6 +113,8 @@ For raster-based mapping you can trade disk IO for memory:
 - ``MappingRaster`` (default) keeps the raster on disk and reads only the needed values.
 - If you cache a window/full raster (``preload_window``, ``preload_full_raster`` or ``load_window``),
   :class:`~weitsicht.MappingRaster` automatically uses an in-memory :class:`~weitsicht.MappingGeorefArray` backend.
+
+.. tip:: With ``MappingRaster`` in default mode, you can use extremely large raster datasets (e.g. a DTM of your whole country) without loading the full raster into RAM.
 
 .. code-block:: python
 

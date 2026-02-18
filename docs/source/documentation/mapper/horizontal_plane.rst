@@ -4,6 +4,9 @@
 Horizontal Plane Mapper
 =======================
 
+.. note:: In the near future there will be a more generall class for planes where plane point and normal vector are used for initialization.
+   ``MappingHorizontalPlane`` will still be possible to be used and is keept for legacy reasons.
+
 .. hint::
    Even if in the mapper CRS all Z-coordinates are the same, transforming results back to the source CRS can change Z.
    Different ellipsoids and vertical shift grids (geoids) can apply. See :ref:`pyproj-hints`.
@@ -18,10 +21,8 @@ transformations are handled via :doc:`../transformation`.
 When calling mapping methods, pass either ``crs_s=...`` (source CRS) or a pre-built ``transformer=...``.
 
 .. important::
-   The ray/plane intersection is computed with Euclidean math and a fixed plane normal ``(0, 0, 1)``.
-   For physically meaningful results, the ray input CRS must be a meter-based 3D CRS where Z represents height.
-
-   Do not intersect rays directly in lon/lat degrees; transform to a projected CRS first and convert back if needed.
+   For physically meaningful results, the ray input CRS must be a meter-based 3D CRS.
+   Do not form rays directly in lon/lat degrees; transform to a projected CRS first and convert back if needed.
 
 
 ----------------------------
@@ -59,12 +60,11 @@ The ray is defined by a start point and a direction vector, both given in the sa
 Currently this is implemented as following:
 
 #. For the ray start position (source CRS), a corresponding plane point is derived using
-   :py:meth:`weitsicht.MappingHorizontalPlane.map_heights_from_coordinates`.
-#. That plane point and a normal vector ``(0, 0, 1)`` are used to compute a line/plane intersection.
-#. If a CRS transformation is involved, the plane point is refined iteratively at the current intersection location
-   to reduce small vertical inconsistencies introduced by vertical transformations (see :ref:`trafo_vertical`).
-#. Parallelity is checked.
-#. The intersection direction is checked; intersections “behind” the ray direction are rejected.
+   :py:meth:`weitsicht.MappingHorizontalPlane.map_heights_from_coordinates` in the mapper crs.
+#. That plane point and a normal vector ``(0, 0, 1)`` are transformed back to the source crs-
+#. Line/plane intersection is computed.
+#. The intersection direction is checked; Parallel rays or intersections “behind” the ray direction are rejected.
+#. Iterate over steps but use the now intersection point instead of start position for the plane point and normals
 
 There is always an intersection between a line and a plane (unless they are parallel).
 
@@ -73,7 +73,7 @@ There is always an intersection between a line and a plane (unless they are para
      :align: center
      :alt: Ray intersection on a horizontal plane
 
-     Ray intersection on a horizontal plane (conceptual).
+     Ray intersection with a plane (conceptual).
 
 .. note::
    Without a CRS transformation, the intersection is a single ray–plane solve.
