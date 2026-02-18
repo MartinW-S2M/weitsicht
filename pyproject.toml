@@ -43,7 +43,7 @@ dependencies = [
     ]
 
 [project.urls]
-    "Homepage" = "https://github.com/MartinW-S2M/weitsicht"
+    "Documentation" = "https://weitsicht.readthedocs.io/en/latest/"
     "Bug Tracker" = "https://github.com/MartinW-S2M/weitsicht/issues"
 
 

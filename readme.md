@@ -262,6 +262,13 @@ To allow ballpark and allow also other than the best transformations, set:
     weitsicht.allow_non_best_transformations() # sets cfg._only_best_transformation to False
     # is the same as allow_non_best_transformations(True), to disallow set to False
 
+## Support
+
+The development has been supported by:
+
+* [TU WIEN - Geo Department - Research Unit Photogrammetry](https://www.tuwien.at/en/mg/geo/photo)
+* [WISDAMapp community](https://wisdamapp.org)
+
 ## Licence
 weitsicht is licensed under the Apache License, Version 2.0 (Apache-2.0).
 
