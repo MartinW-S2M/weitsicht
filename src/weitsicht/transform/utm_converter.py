@@ -26,7 +26,7 @@ from pyproj.crs.crs import CompoundCRS
 
 from weitsicht.transform.coordinates_transformer import CoordinateTransformer
 
-__all__ = ["get_zone", "point_convert_utm_wgs84_egm2008"]
+__all__ = ["get_zone", "point_convert_utm_wgs84_egm2008", "point_wgs84ell_to_utm"]
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +88,43 @@ def point_convert_utm_wgs84_egm2008(
     # Here the trafo can actually never be None
     transformer_wgs84 = CoordinateTransformer.from_crs(crs_4979, utm_crs)
 
+    assert transformer_wgs84 is not None
+    coo_utm = transformer_wgs84.transform(*coo_wgs84)
+
+    x_utm, y_utm, z_geoid = coo_utm[0, :]
+    return x_utm, y_utm, z_geoid, utm_crs
+
+
+def point_wgs84ell_to_utm(
+    crs_s: CRS, lon_deg: float, lat_deg: float, h_m: float
+) -> tuple[float, float, float, CRS | CompoundCRS]:
+    """Transform WGS84 ell coordinates to WGS84-UTM coordinates. Height will be that from input
+
+    The point is first transformed to WGS84 3D (EPSG:4979), then assigned to a UTM zone and
+    transformed to the corresponding compound CRS (UTM + EGM2008 geoid height).
+
+    :param crs_s: CRS of the input point.
+    :type crs_s: CRS
+    :param x: X coordinate in ``crs_s`` units.
+    :type x: float
+    :param y: Y coordinate in ``crs_s`` units.
+    :type y: float
+    :param z: Z coordinate in ``crs_s`` units.
+    :type z: float
+    :return: Tuple ``(x_utm, y_utm, z_geoid, utm_crs)``.
+    :rtype: tuple[float, float, float, CRS | CompoundCRS]
+    :raises ValueError: If the transformed WGS84 point is outside UTM latitude/longitude limits.
+    :raises CoordinateTransformationError: If a coordinate transformation cannot be established or applied.
+    """
+
+    epsg_code_utm = get_zone(lon_deg, lat_deg)
+
+    utm_crs = CRS("EPSG:" + str(epsg_code_utm) + "+3855")
+
+    # Here the trafo can actually never be None
+    transformer_wgs84 = CoordinateTransformer.from_crs(crs_s=crs_s, crs_t=utm_crs)
+
+    coo_wgs84 = np.array([[lon_deg, lat_deg, h_m]])
     assert transformer_wgs84 is not None
     coo_utm = transformer_wgs84.transform(*coo_wgs84)
 

@@ -27,7 +27,7 @@
      units="px"
      inkscape:zoom="1.5287038"
      inkscape:cx="181.52634"
-     inkscape:cy="241.70805"
+     inkscape:cy="241.70804"
      inkscape:window-width="1920"
      inkscape:window-height="1137"
      inkscape:window-x="-8"
@@ -506,63 +506,6 @@
          x="75.040619"
          y="40.562462">y</tspan></text>
     <path
-       style="fill:none;fill-opacity:0.623529;stroke:#800080;stroke-width:0.26458px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0.623529;marker-end:url(#marker1783-6)"
-       d="M 61.538957,91.255231 88.365546,84.332242"
-       id="path1278-9" />
-    <path
-       style="fill:none;fill-opacity:0.623529;stroke:#800080;stroke-width:0.26458px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0.623529;marker-end:url(#marker1793-6)"
-       d="M 61.538957,91.255231 V 69.27474"
-       id="path1280-0" />
-    <path
-       style="fill:none;fill-opacity:0.623529;stroke:#800080;stroke-width:0.26458px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0.623529;marker-end:url(#marker2008-2)"
-       d="M 61.538957,91.255231 85.423276,102.85124"
-       id="path1844-0" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.68479px;font-family:Sans;-inkscape-font-specification:'Sans, Normal';font-variant-ligatures:normal;font-variant-position:super;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#800080;fill-opacity:1;stroke:none;stroke-width:0.32546;stroke-opacity:1"
-       x="86.878944"
-       y="61.65424"
-       id="text1-7-6"
-       transform="matrix(0.92649136,0.44858684,-0.42334834,0.87436488,0,0)"><tspan
-         sodipodi:role="line"
-         id="tspan1-9-1"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.68479px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#800080;fill-opacity:1;stroke:none;stroke-width:0.32546"
-         x="86.878944"
-         y="61.65424">image's crs</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.58604px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.624561;fill:#800080;fill-opacity:1;stroke:none;stroke-width:0.181766;stroke-opacity:1"
-       x="86.288643"
-       y="102.15894"
-       id="text120-8"><tspan
-         sodipodi:role="line"
-         id="tspan120-9"
-         style="fill:#800080;fill-opacity:1;stroke-width:0.181766"
-         x="86.288643"
-         y="102.15894">x</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.58604px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.624561;fill:#800080;fill-opacity:1;stroke:none;stroke-width:0.181766;stroke-opacity:1"
-       x="87.03051"
-       y="82.60804"
-       id="text120-5-3"><tspan
-         sodipodi:role="line"
-         id="tspan120-2-4"
-         style="fill:#800080;fill-opacity:1;stroke-width:0.181766"
-         x="87.03051"
-         y="82.60804">y</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.58604px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.624561;fill:#800080;fill-opacity:1;stroke:none;stroke-width:0.181766;stroke-opacity:1"
-       x="62.847626"
-       y="69.49041"
-       id="text120-1-4"><tspan
-         sodipodi:role="line"
-         id="tspan120-1-60"
-         style="fill:#800080;fill-opacity:1;stroke-width:0.181766"
-         x="62.847626"
-         y="69.49041">z</tspan></text>
-    <path
        style="opacity:0.308772;fill:#2b0000;stroke:#002c38;stroke-width:0.26458px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="M 73.765484,62.282716 47.60184,49.329693"
        id="path2049-6"
@@ -662,7 +605,7 @@
          id="tspan3"
          style="font-size:4.76244px;fill:#800000;fill-opacity:1;stroke-width:0.26458"
          x="47.710663"
-         y="73.355515">3D coordinate's</tspan><tspan
+         y="73.355515">world</tspan><tspan
          sodipodi:role="line"
          style="font-size:4.76244px;fill:#800000;fill-opacity:1;stroke-width:0.26458"
          x="47.710663"

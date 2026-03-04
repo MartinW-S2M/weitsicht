@@ -21,7 +21,7 @@ def test_eor_from_meta_zenmuse_p1():
     weitsicht.allow_non_best_transformations()
 
     tags = PyExifToolTags(_load_meta())
-    result = eor_from_meta(tags.get_all())
+    result = eor_from_meta(tags.get_all(), to_utm=True)
 
     assert result.ok is True
 

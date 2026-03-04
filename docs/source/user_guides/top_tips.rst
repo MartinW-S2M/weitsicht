@@ -31,6 +31,24 @@ You can test whether it's Success or Failure be checking ``.ok``.
 
 Always check for issues to catch reasons for invalid results
 
+.. tip::
+   Most mapping functions return results with a CRS attached (``res.crs``). You can use that CRS to transform the
+   mapped output (e.g. footprint coordinates) to another coordinate system via :class:`~weitsicht.transform.CoordinateTransformer`.
+
+   .. code-block:: python
+
+      from pyproj import CRS
+      from weitsicht.transform import CoordinateTransformer
+
+      res = image.map_footprint()
+      if res.ok and res.crs is not None:
+          crs_target = CRS.from_epsg(4979) # WGS84 ell with ellipsoid heights
+          transformer = CoordinateTransformer.from_crs(res.crs, crs_target)
+
+          coords_src = res.coordinates[res.mask]
+          # Always check that transfomer is not None which is the case if source and target crs are equal
+          coords_target = coords_src if transformer is None else transformer.transform(coords_src)
+
 Errors
 ======
 Most functions either raise a :class:`~weitsicht.exceptions.WeitsichtError` (invalid inputs / missing state) **or**
@@ -61,6 +79,10 @@ Perspective Images
    -> ``image_from_meta()``) or use ``ImageFromMetaBuilder`` if you want IOR/EOR separately. See :doc:`metadata` and
    :ref:`example-0401`.
 
+   ''image_from_meta()'' and other EOR related functions feature an input parameter ``to_utm=True`` which will convert EOR (position and orientation) to WGS84/UTM.
+   Otherwise standard output of images loaded by meta builder are in WGS84 geocentric (EPG:4978)  coordiantes
+
+
 CRS quick reference
 -------------------
 
@@ -70,6 +92,7 @@ CRS quick reference
 
    * - CRS / units
      - Perspective Image (EOR)
+     - Coordiantes for Projection
      - Orthophoto CRS
      - Mapper Horizontal
      - MapperRaster GeorefArray
@@ -78,9 +101,11 @@ CRS quick reference
      - OK
      - OK
      - OK
+     - OK
      - OK (``force_no_crs=True``)
      - OK
-   * - Projected/local Cartesian **(0)**
+   * - Projected (e.g., UTM) **(0)**
+     - OK
      - OK
      - OK
      - OK
@@ -88,12 +113,14 @@ CRS quick reference
      - OK
    * - Geocentric Cartesian (ECEF) (e.g. ``EPSG:4978``)
      - OK
+     - OK
      - Not possible - Rare (never seen such thing)
      - Limited **(1)**
      - Not possible - Rare (never seen such thing)
      - OK
    * - Geodetic lon/lat (degrees) (e.g. ``EPSG:4326`` / ``EPSG:4979``)
      - Not working **(2)**
+     - OK
      - Possible (but units for gsd/area are degrees)
      - Possible **(3)**
      - Possible (only with 3D CRS) **(4)**

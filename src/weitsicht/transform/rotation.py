@@ -121,7 +121,9 @@ class Rotation:
     def from_apk(cls, alpha: float, zeta: float, kappa: float) -> Rotation:
         """Create a rotation from alpha/zeta/kappa angles in radians.
 
-        See :meth:`from_apk_degree` for the meaning of the angles.
+        - ``alpha``: azimuth of the camera +Z axis, relative to +X (East) in the ground CRS,
+        - ``zeta``: inclination/tilt relative to nadir (0° = nadir),
+        - ``kappa``: rotation around the camera +Z axis.
 
         :param alpha: Alpha angle in radians.
         :type alpha: float

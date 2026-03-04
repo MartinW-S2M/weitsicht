@@ -56,19 +56,19 @@ class ImageFromMetaBuilder:
         crs: CRS | None = None,
         vertical_ref: str = "ellipsoidal",
         height_rel: float = 0.0,
+        to_utm: bool = False,
     ) -> EORFromMetaResult:
         if self._eor is None:
-            self._eor = eor_from_meta(tags=self.tags, crs=crs, vertical_ref=vertical_ref, height_rel=height_rel)
+            self._eor = eor_from_meta(
+                tags=self.tags, crs=crs, vertical_ref=vertical_ref, height_rel=height_rel, to_utm=to_utm
+            )
         return self._eor
 
     def image(
-        self,
-        crs: CRS | None = None,
-        vertical_ref: str = "ellipsoidal",
-        height_rel: float = 0.0,
+        self, crs: CRS | None = None, vertical_ref: str = "ellipsoidal", height_rel: float = 0.0, to_utm: bool = False
     ) -> ImageFromMetaResult:
         ior_res = self.ior()
-        eor_res = self.eor(crs=crs, vertical_ref=vertical_ref, height_rel=height_rel)
+        eor_res = self.eor(crs=crs, vertical_ref=vertical_ref, height_rel=height_rel, to_utm=to_utm)
 
         if ior_res.ok is False or eor_res.ok is False:
             errors: list[str] = []
@@ -97,6 +97,7 @@ def image_from_meta(
     crs: CRS | None = None,
     vertical_ref: str = "ellipsoidal",
     height_rel: float = 0.0,
+    to_utm: bool = False,
 ) -> ImageFromMetaResult:
     """Build an image (camera + EOR) from metadata.
 
@@ -108,8 +109,11 @@ def image_from_meta(
     :type vertical_ref: str
     :param height_rel: Reference height (meters) for ``vertical_ref='relative'``, defaults to ``0.0``.
     :type height_rel: float
+    :param to_utm: Whether to output the image pose in WGS84-UTM (EGM2008) instead of ECEF, defaults to ``False``.
+        If ``True``, the orientation is aligned to UTM grid north (meridian convergence applied).
+    :type to_utm: bool
     :return: Successful image build result or a failure result.
     :rtype: ImageFromMetaResult
     """
 
-    return ImageFromMetaBuilder(tags).image(crs=crs, vertical_ref=vertical_ref, height_rel=height_rel)
+    return ImageFromMetaBuilder(tags).image(crs=crs, vertical_ref=vertical_ref, height_rel=height_rel, to_utm=to_utm)

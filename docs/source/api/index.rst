@@ -113,6 +113,12 @@ Rotation & Coordinate Transformation
 
         Helper class for coordinate transformation
 
+    .. grid-item-card:: :py:class:`WGS84LocalTangent`
+        :link: transform/wgs84_local_tangent
+        :link-type: doc
+
+        Helper class for Local Tangent Plane
+
 
 Camera
 ===============

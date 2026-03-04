@@ -84,6 +84,8 @@ image_dict = {}
 for key, meta_data in meta_data_dict.items():
     tags = PyExifToolTags(meta_data)
     img_res = image_from_meta(tags)  # accepts MetaTagsBase or MetaTagAll
+    # in this case our CRS of the images will be ECEF, there is a paramter for image_from_meta called ``to_utm``
+    # which will transform EOR to UTM instead.
     if img_res.ok is False:
         raise RuntimeError(f"Failed to build image '{key}' from metadata: {img_res.error} ({img_res.issues})")
     image_dict[key] = img_res.image

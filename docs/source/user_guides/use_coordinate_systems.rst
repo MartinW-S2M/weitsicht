@@ -13,6 +13,21 @@ In ``weitsicht`` this matters because:
 - your ground model (mapper) may live in a different CRS,
 - your target coordinates may be in yet another CRS.
 
+CRS realizations and epochs
+---------------------------
+
+.. important::
+   If you work with a specific CRS **realization** (e.g. a particular ETRS89/ETRF frame or a national realization),
+   you must use the correct EPSG code for that system/realization. To avoid subtle offsets, make sure that for your
+   mapper (rasters, meshes, reference layers) you also use then the correct **realization/datum** that mapper data was
+   derived from.
+
+   This is a broad topic and we will not further at the moment cover that more specific.
+
+   Time-dependent transformations (e.g. plate motion) are currently not considered because the
+   :py:class:`weitsicht.transform.coordinates_transformer.CoordinateTransformer` does not accept a coordinate's
+   epoch/time. If you need epoch-aware transformations, use ``pyproj`` directly.
+
 How ``weitsicht`` handles coordinates
 -------------------------------------
 

@@ -342,6 +342,88 @@ class CoordinateTransformer:
 
         return vec_t / vec_t_norm[:, None]
 
+    def transform_rotation_matrix(
+        self,
+        coordinates_start: ArrayNx3,
+        rotation_matrix: np.ndarray,
+        direction: str = "forward",
+        orthonormalize: bool = True,
+    ) -> np.ndarray:
+        """Transform rotation matrices between CRSs by transforming their basis axes.
+
+        The rotation matrix convention in ``weitsicht`` is::
+
+            v_world = R @ v_local
+
+        i.e. the *columns* of ``R`` are the local basis axes expressed in the world CRS.
+
+        This helper transforms those three axes using :meth:`transform_vector` evaluated at
+        ``coordinates_start`` and re-assembles a rotation matrix in the target CRS.
+
+        Since many CRS transformations are not strictly rigid, the transformed axes may not be
+        perfectly orthogonal. If ``orthonormalize`` is ``True``, the result is projected onto
+        SO(3) via an SVD-based orthonormalization, enforcing ``det(R)=+1``.
+
+        :param coordinates_start: Start coordinates (N×3) where the rotation is defined.
+        :type coordinates_start: ArrayNx3
+        :param rotation_matrix: Rotation matrix (3×3) or stacked (N×3×3).
+        :type rotation_matrix: numpy.ndarray
+        :param direction: Transform direction (``forward``, ``inverse``), defaults to ``forward``.
+        :type direction: str
+        :param orthonormalize: Re-orthonormalize the transformed axes, defaults to ``True``.
+        :type orthonormalize: bool
+        :return: Transformed rotation matrix (3×3) or stacked (N×3×3).
+        :rtype: numpy.ndarray
+        :raises ValueError: If input shapes are incompatible.
+        """
+
+        start = np.asarray(coordinates_start, dtype=float)
+        start_was_vector = start.ndim == 1
+        if start_was_vector:
+            start = np.array([start], dtype=float)
+        if start.ndim != 2 or start.shape[1] < 3:
+            raise ValueError("coordinates_start must be array-like with shape (N, 3)")
+        start = start[:, :3]
+
+        rot = np.asarray(rotation_matrix, dtype=float)
+        rot_was_matrix = rot.ndim == 2
+        if rot_was_matrix:
+            if rot.shape != (3, 3):
+                raise ValueError("rotation_matrix must have shape (3, 3)")
+            rot = np.array([rot], dtype=float)
+        if rot.ndim != 3 or rot.shape[1:] != (3, 3):
+            raise ValueError("rotation_matrix must have shape (3, 3) or (N, 3, 3)")
+
+        # Broadcast a single start/rotation to match the other input.
+        if start.shape[0] == 1 and rot.shape[0] > 1:
+            start = np.repeat(start, rot.shape[0], axis=0)
+        if rot.shape[0] == 1 and start.shape[0] > 1:
+            rot = np.repeat(rot, start.shape[0], axis=0)
+        if start.shape[0] != rot.shape[0]:
+            raise ValueError("coordinates_start and rotation_matrix must have the same length")
+
+        n = start.shape[0]
+
+        # Transform the three basis axes (columns) in one call.
+        axes_src = rot.transpose(0, 2, 1).reshape(n * 3, 3)
+        start_rep = np.repeat(start, 3, axis=0)
+        axes_t = self.transform_vector(start_rep, axes_src, direction=direction).reshape(n, 3, 3)
+        rot_t = axes_t.transpose(0, 2, 1)
+
+        if orthonormalize:
+            u, _, vt = np.linalg.svd(rot_t)
+            rot_t = u @ vt
+
+            det = np.linalg.det(rot_t)
+            reflect = det < 0
+            if np.any(reflect):
+                u[reflect, :, -1] *= -1.0
+                rot_t[reflect] = u[reflect] @ vt[reflect]
+
+        if start_was_vector and rot_was_matrix:
+            return rot_t[0]
+        return rot_t
+
 
 class Geometries:  # pragma: no cover
     pass

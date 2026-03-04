@@ -637,6 +637,7 @@ class ImagePerspective(ImageBase):
             ok=True,
             coordinates=mapping_result.coordinates,
             mask=mapping_result.mask,
+            crs=self.crs,
             normals=mapping_result.normals,
             gsd=gsd,
             gsd_per_point=gsd_per_point,

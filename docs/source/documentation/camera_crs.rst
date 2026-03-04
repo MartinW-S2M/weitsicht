@@ -76,13 +76,16 @@ Convention in ``weitsicht``
 Combined CRS Overview
 =====================
 The following figure shows how the four systems are linked:
-3D point CRS, perspective image CRS, camera CRS, and pixel/image CRS.
+world CRS (3D point's CRS), camera CRS, and pixel/image CRS.
 
 .. figure:: /_static/crs_all.svg
   :align: center
   :alt: Combined CRS overview
 
-  Link between 3D point CRS, perspective image CRS, camera CRS, and pixel/image CRS.
+  Link between world CRS (3D point's CRS), camera CRS, and pixel/image CRS.
+  Even though class wise in weitsicht images and camera are splitt, the camera crs is the same the EOR of an captured image (not the image content itself) is refereing too.
+
+Here, “world CRS” is just a generic label pointing to whatever external/project CRS you use (e.g., a specific EPSG code), not a single universal frame—this shorthand is commonly used in photogrammetry and computer vision.
 
 References
 ==========

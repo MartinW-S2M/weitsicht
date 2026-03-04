@@ -122,3 +122,9 @@ used to map objects and find these objects in other images.
         :link: example-0401
         :link-type: ref
         :shadow: md
+
+    .. grid-item-card::  Example EOR from Meta Data
+        :img-bottom: /_static/example_images/04_02_footprint.jpg
+        :link: example-0402
+        :link-type: ref
+        :shadow: md

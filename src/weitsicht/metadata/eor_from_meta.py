@@ -21,7 +21,7 @@ import logging
 
 import numpy as np
 from numpy import cos, sin
-from pyproj import CRS
+from pyproj import CRS, Proj
 from pyproj.crs.crs import CompoundCRS
 
 from weitsicht.exceptions import CoordinateTransformationError
@@ -32,113 +32,24 @@ from weitsicht.metadata.metadata_results import (
 )
 from weitsicht.metadata.tag_systems.tag_base import MetaTagAll
 from weitsicht.transform.rotation import Rotation
-from weitsicht.transform.utm_converter import point_convert_utm_wgs84_egm2008
-from weitsicht.utils import ResultFailure
+from weitsicht.transform.utm_converter import point_convert_utm_wgs84_egm2008, point_wgs84ell_to_utm
+from weitsicht.transform.wgs84_local_tangent import WGS84LocalTangent
+from weitsicht.utils import Array3x3, ResultFailure
 
 logger = logging.getLogger(__name__)
 
-aircraft_notation_to_front_notation = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
-swap_ned_to_enu_coo_system = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
-swap_body_cam = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1]])
-swap_body_cam_gimbal = np.array([[0, 0, -1], [-1, 0, 0], [0, 1, 0]])
+r_body_to_cam_down_facing = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
+r_body_to_cam_in_x_facing = np.array([[0, 0, -1], [1, 0, 0], [0, -1, 0]])
 
 
 def _deg(val):
     return float(val) * np.pi / 180.0
 
 
-def eor_from_meta(
-    tags: MetaTagAll,
-    crs: CRS | None = None,
-    vertical_ref: str = "ellipsoidal",
-    height_rel: float = 0.0,
-) -> EORFromMetaResult:
-    """Extract exterior orientation (position + rotation + CRS) from metadata tags.
-
-    The returned position is expressed in a local projected coordinate system derived from the
-    input CRS (typically WGS84) by converting to WGS84-UTM with EGM2008 heights.
-
-    If XMP tags ``HorizCS``/``VertCS`` are missing, defaults to WGS84 (EPSG:4979) with ellipsoidal heights.
-
-    :param tags: Grouped metadata values (e.g. from ``MetaTagsBase.get_all()``).
-    :type tags: MetaTagAll
-    :param crs: Optional override CRS for interpreting the position tags, defaults to ``None``.
-    :type crs: CRS | None
-    :param vertical_ref: Vertical reference mode: ``ellipsoidal``, ``orthometric``, or ``relative``.
-        ``relative`` uses ``RelativeAltitude`` + ``height_rel``.
-    :type vertical_ref: str
-    :param height_rel: Reference height (meters) for ``vertical_ref='relative'``, defaults to ``0.0``.
-    :type height_rel: float
-    :return: Successful EOR result or a failure result.
-    :rtype: EORFromMetaResult
-    """
-
-    crs_source: CRS | None = crs
-    position = np.array([0, 0, 0])
-
-    lon = tags.gps.gps_longitude
-    lat = tags.gps.gps_latitude
-    alt = tags.gps.gps_altitude
-    lon_ref = tags.gps.gps_longitude_ref or "E"
-    lat_ref = tags.gps.gps_latitude_ref or "N"
-
-    if lon is not None and lat is not None and alt is not None:
-        x_exif = lon
-        if lon_ref == "W":
-            x_exif = -x_exif
-        y_exif = lat
-        if lat_ref == "S":
-            y_exif = -y_exif
-        z_exif = alt
-    else:
-        return ResultFailure(ok=False, error="Standard GPS tags are missing", issues={MetadataIssue.MISSING_GPS})
-
-    #
-    rel_z_exif = None
-    if vertical_ref == "relative":
-        rel_z_exif = tags.z_alternatives.rel_altitude
-        if rel_z_exif is not None:
-            z_exif = height_rel + float(rel_z_exif)
-
-    # Determine CRS for interpreting the input coordinates if not overridden by the user.
-    if crs_source is None:
-        if vertical_ref == "orthometric":
-            crs_hor_exif = 4326
-            crs_vert_exif = 3855
-
-        else:
-            crs_hor_exif = tags.crs.horiz_cs or 4979
-            crs_vert_exif = tags.crs.vert_cs or "ellipsoidal"
-
-        if tags.crs.horiz_cs is not None:
-            crs_hor_exif = tags.crs.horiz_cs
-            crs_vert_exif = tags.crs.vert_cs or "ellipsoidal"
-
-        # This is now an override if relative height is specified:
-        # Then we will
-        if rel_z_exif is not None:
-            crs_hor_exif = 4326
-            crs_vert_exif = 3855
-
-        if crs_vert_exif == "ellipsoidal":
-            crs_source = CRS(crs_hor_exif).to_3d()
-        else:
-            crs_source = CompoundCRS(
-                str(crs_hor_exif) + "+" + str(crs_vert_exif),
-                [crs_hor_exif, crs_vert_exif],
-            )
-
-    assert crs_source is not None
-    try:
-        x, y, z, crs_result = point_convert_utm_wgs84_egm2008(crs_source, x_exif, y_exif, z_exif)
-    except (ValueError, CoordinateTransformationError) as err:
-        return ResultFailure(
-            ok=False, error=str(err), issues={MetadataIssue.TRANSFORMATION_FAILED, MetadataIssue.EOR_FAILED}
-        )
-
-    position = np.array([x, y, z])
-
-    # Orientation
+def rot_body_ned_from_meta(tags: MetaTagAll) -> tuple[Array3x3, bool] | None:
+    # Orientation normally in NED and aircraft convention
+    # Some of the tags do actually refere to the image direction of view
+    # Others refere to angles of the aircraft and the camera is mounted looking down
 
     xmp_cam_pitch = tags.orientation.xmp_camera_pitch
     xmp_cam_roll = tags.orientation.xmp_camera_roll
@@ -199,20 +110,13 @@ def eor_from_meta(
         yaw = _deg(maker_notes_gimbal_yaw)
         pitch = _deg(maker_notes_gimbal_pitch)
     else:
-        return ResultFailure(
-            ok=False,
-            error="Orientation angles are not in meta-data",
-            issues={MetadataIssue.MISSING_ORIENTATION, MetadataIssue.EOR_FAILED},
-        )
+        return None
 
     if pitch is None:
-        return ResultFailure(
-            ok=False,
-            error="Orientation angles are not in meta-data",
-            issues={MetadataIssue.MISSING_ORIENTATION, MetadataIssue.EOR_FAILED},
-        )
-    # Rotation of IMAGE still in Body System
-    rot_sys = np.array(
+        return None
+
+    # Rotation of IMAGE still in Body System assume NED
+    rot_ned_body = np.array(
         [
             [
                 cos(pitch) * cos(yaw),
@@ -228,14 +132,183 @@ def eor_from_meta(
         ]
     )
 
-    # Bring rotation into the cameras coordinate system. X left, Y top, Z backwards of viewing direction
-    rot_enu_body = (swap_ned_to_enu_coo_system @ rot_sys) @ aircraft_notation_to_front_notation
+    return rot_ned_body, angle_in_direction_of_view
 
-    if angle_in_direction_of_view:
-        rot_enu_cam = rot_enu_body @ swap_body_cam_gimbal
+
+def eor_from_meta(
+    tags: MetaTagAll,
+    crs: CRS | None = None,
+    vertical_ref: str = "ellipsoidal",
+    height_rel: float = 0.0,
+    to_utm: bool = False,
+) -> EORFromMetaResult:
+    """Extract exterior orientation (position + rotation + CRS) from metadata tags.
+
+    If ``to_utm`` is ``True`` the returned position is expressed in a local projected coordinate system
+    derived from the input CRS (typically WGS84) by converting to WGS84-UTM with EGM2008 heights.
+    The orientation is returned in the corresponding UTM grid ENU frame (i.e. true ENU rotated by
+    meridian convergence).
+
+    If ``to_utm`` is ``False`` the pose is returned in WGS84 ECEF (EPSG:4978).
+
+    If XMP tags ``HorizCS``/``VertCS`` are missing, defaults to WGS84 (EPSG:4979) with ellipsoidal heights.
+
+    :param tags: Grouped metadata values (e.g. from ``MetaTagsBase.get_all()``).
+    :type tags: MetaTagAll
+    :param crs: Optional override CRS for interpreting the position tags, defaults to ``None``.
+    :type crs: CRS | None
+    :param vertical_ref: Vertical reference mode: ``ellipsoidal``, ``orthometric``, or ``relative``.
+        ``relative`` uses ``RelativeAltitude`` + ``height_rel``.
+    :type vertical_ref: str
+    :param height_rel: Reference height (meters) for ``vertical_ref='relative'``, defaults to ``0.0``.
+    :type height_rel: float
+    :param to_utm: Whether to output the position in WGS84-UTM (EGM2008) instead of ECEF, defaults to ``False``.
+    :type to_utm: bool
+    :return: Successful EOR result or a failure result.
+    :rtype: EORFromMetaResult
+    """
+
+    crs_source: CRS | None = crs
+
+    lon = tags.gps.gps_longitude
+    lat = tags.gps.gps_latitude
+    alt = tags.gps.gps_altitude
+    lon_ref = tags.gps.gps_longitude_ref or "E"
+    lat_ref = tags.gps.gps_latitude_ref or "N"
+
+    if lon is not None and lat is not None and alt is not None:
+        x_exif = lon
+        if lon_ref == "W":
+            x_exif = -x_exif
+        y_exif = lat
+        if lat_ref == "S":
+            y_exif = -y_exif
+        z_exif = alt
     else:
-        rot_enu_cam = rot_enu_body @ swap_body_cam
+        return ResultFailure(ok=False, error="Standard GPS tags are missing", issues={MetadataIssue.MISSING_GPS})
 
-    orientation = Rotation(rot_enu_cam)
+    # First we will check if we are using relative heights
+    # The problem is that in old DJI systems the altitude was very bad
+    # But the reference for the relative height was not stored in the meta data
+    # It was often the take-off point but that information is not given normaly if you have only images.
+    # Thus we have that parameter height_rel which states the height the rel_altitude referes to.
+    rel_z_exif = None
+    if vertical_ref == "relative":
+        rel_z_exif = tags.z_alternatives.rel_altitude
+        if rel_z_exif is not None:
+            z_exif = height_rel + float(rel_z_exif)
 
-    return EORFromMetaResultSuccess(ok=True, position=position, orientation=orientation, crs=crs_result)
+    # Determine CRS for interpreting the input coordinates if not overridden by the user.
+    is_wgs84 = False
+    if crs_source is None:
+        # First this will be standard based on if vertical ref is specified
+        if vertical_ref == "orthometric":
+            crs_hor_exif = 4326
+            crs_vert_exif = 3855
+
+        else:
+            crs_hor_exif = tags.crs.horiz_cs or 4979
+            crs_vert_exif = tags.crs.vert_cs or "ellipsoidal"
+
+        # Just to be sure, this maybe interfere with vertical ref
+        # TODO this could overrite the vertical_ref specified
+        if tags.crs.horiz_cs is not None:
+            crs_hor_exif = tags.crs.horiz_cs
+            crs_vert_exif = tags.crs.vert_cs or "ellipsoidal"
+
+        # This is now an override if relative height is specified:
+        # Then we will use 4326+3855
+        if rel_z_exif is not None:
+            crs_hor_exif = 4326
+            crs_vert_exif = 3855
+
+        # Create now the CRS
+        if crs_vert_exif == "ellipsoidal":
+            crs_source = CRS(crs_hor_exif).to_3d()
+        else:
+            crs_hor = CRS.from_user_input(crs_hor_exif)
+            crs_vert = CRS.from_user_input(crs_vert_exif)
+            crs_source = CompoundCRS(f"{crs_hor_exif}+{crs_vert_exif}", [crs_hor, crs_vert])
+
+        is_wgs84 = True
+    # We assume that even if the position is given in another CRS,
+    # still the angles are that one of the local tangent plane at this point
+    # Therefore we transform only the position if a crs is given as parameter
+    # Transform that to ECEF and make the NED to ECEF conversion
+
+    assert crs_source is not None
+
+    if is_wgs84:
+        ltp_frame = WGS84LocalTangent.from_wgs84ell_crs(
+            crs_s=crs_source, lon_deg=x_exif, lat_deg=y_exif, h_m=z_exif, skip_ecef=to_utm
+        )
+    else:
+        ltp_frame = WGS84LocalTangent.from_crs(x=x_exif, y=y_exif, z=z_exif, crs_s=crs_source)
+
+    # GET the rotation of the iamge in that case UAV/drone
+    # It is supposed to be in NED and axis follow aircraft convention8
+    result_rot = rot_body_ned_from_meta(tags=tags)
+
+    if result_rot is None:
+        return ResultFailure(
+            ok=False,
+            error="Orientation angles are not in meta-data",
+            issues={MetadataIssue.MISSING_ORIENTATION, MetadataIssue.EOR_FAILED},
+        )
+
+    rot_body_ned, angle_in_direction_of_view = result_rot
+    rot_ecef_body = ltp_frame.to_ecef_matrix(rot_body_ned, local_frame="NED")
+
+    # We have now the rotation in ecef
+    # Need to convert to allign with camera axis from body axis
+    if angle_in_direction_of_view:
+        rot_ecef_cam = rot_ecef_body @ r_body_to_cam_in_x_facing
+    else:
+        rot_ecef_cam = rot_ecef_body @ r_body_to_cam_down_facing
+    if to_utm is False:
+        return EORFromMetaResultSuccess(
+            ok=True,
+            position=ltp_frame.origin_ecef,
+            orientation=Rotation(rot_ecef_cam),
+            crs=ltp_frame.crs_ecef,
+        )
+
+    # FOR UTM projection to calculate we go directly from ell coordinates
+    # So if we already have WGS84 ell coordiantes we can go directly to UTM
+    # Route for projected output: position in UTM, orientation in UTM referencing to grid north.
+
+    lon_deg, lat_deg, h_m = ltp_frame.origin_ell[0], ltp_frame.origin_ell[1], ltp_frame.origin_ell[2]
+
+    try:
+        if is_wgs84:
+            x, y, z, crs_result = point_wgs84ell_to_utm(crs_source, lon_deg, lat_deg, h_m)
+        else:
+            origin_ecef = ltp_frame.origin_ecef
+            x, y, z, crs_result = point_convert_utm_wgs84_egm2008(
+                crs_source, origin_ecef[0], origin_ecef[1], origin_ecef[2]
+            )
+    except (ValueError, CoordinateTransformationError) as err:
+        return ResultFailure(
+            ok=False, error=str(err), issues={MetadataIssue.TRANSFORMATION_FAILED, MetadataIssue.EOR_FAILED}
+        )
+
+    position = np.array([x, y, z])
+
+    # FOR UTM the Rotation Matrix in ENU (true north)
+    rot_enu_cam = ltp_frame.to_ltp_matrix(rot_ecef_cam, local_frame="ENU")
+
+    # Apply grid convergence so that the returned orientation matches the UTM grid north.
+    crs_utm = crs_result.sub_crs_list[0] if crs_result.sub_crs_list else crs_result
+    convergence_deg = Proj(crs_utm).get_factors(lon_deg, lat_deg).meridian_convergence
+    g = float(np.deg2rad(convergence_deg))
+    rz_gamma = np.array(
+        [
+            [np.cos(g), -np.sin(g), 0.0],
+            [np.sin(g), np.cos(g), 0.0],
+            [0.0, 0.0, 1.0],
+        ],
+        dtype=float,
+    )
+    rot_utm_cam = rz_gamma @ rot_enu_cam
+
+    return EORFromMetaResultSuccess(ok=True, position=position, orientation=Rotation(rot_utm_cam), crs=crs_result)

@@ -48,6 +48,22 @@ These concepts help avoid common mistakes when working with geo-referenced image
 
         How to use coordinate systems
 
+
+Metadata - Drone Imagery
+==================================
+
+.. grid:: 2 2 3 3
+    :gutter: 1
+    :padding: 1
+
+    .. grid-item-card:: Metadata
+        :link: metadata
+        :link-type: doc
+        :shadow: md
+        :text-align: center
+
+        IOR/EOR/image
+
 Data Concepts and Handling
 ==================================
 
@@ -103,14 +119,6 @@ Data Concepts and Handling
 
         Helpers for type narrowing
 
-    .. grid-item-card:: Metadata
-        :link: metadata
-        :link-type: doc
-        :shadow: md
-        :text-align: center
-
-        IOR/EOR/image
-
     .. grid-item-card:: Camera and Distortion
         :link: cameras_distortion
         :link-type: doc
@@ -152,13 +160,13 @@ Data Concepts and Handling
    quickstart
    top_tips
    use_coordinate_systems
+   metadata
    images_guide
    rotation
    images_projection_mapping
    results_prj_mapping
    error_handling
    type_guards
-   metadata
    cameras_distortion
    mappers
    batching_images

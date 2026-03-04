@@ -126,6 +126,87 @@ Exterior orientation (EOR)
    else:
        print(eor_res.error, eor_res.issues)
 
+.. important::
+   The estimated image pose (EOR: position + orientation) is returned in **WGS84 geocentric / ECEF**
+   (``EPSG:4978``) by default (i.e. unless you set ``to_utm=True``). You can always inspect the CRS from the result
+   (``eor_res.crs``) or, when building a full image, via ``image.crs``.
+
+CRS override (optional)
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, ``eor_from_meta``, ``image_from_meta`` and ``ImageBuilder.eor()`` tries to interpret the position tags using CRS information found in metadata (custom
+XMP tags like ``HorizCS``/``VertCS``). If those tags are missing, it falls back to WGS84 (typically ``EPSG:4979`` for
+ellipsoidal heights; ``EPSG:4326+3855`` for orthometric/relative modes).
+
+You can override the CRS detection by passing ``crs=...``. This is useful when:
+
+- the CRS tags are missing or wrong,
+- you want to enforce a specific vertical datum (use a 3D CRS or a compound CRS),
+- you inject positions from RTK/DGPS processing that are referenced to a known CRS from your base/reference setup.
+
+.. code-block:: python
+
+   from pyproj import CRS
+   from weitsicht import eor_from_meta
+
+   # Example: ETRS89 ECEF coordinates (adapt EPSG to your reference frame if needed)
+   crs_rtk = CRS.from_epsg(4936)
+
+   eor_res = eor_from_meta(tags.get_all(), crs=crs_rtk)
+
+.. important::
+   Even if you pass a ``crs`` to the metadata helpers, the pose is still converted to **WGS84 ECEF**
+   (``EPSG:4978``). The reason is that we assume the orientation angles describe a **local tangent plane** at the image
+   position. Converting the position to ECEF first and then deriving the local tangent frame is robust and keeps the
+   implementation simple. Building the local tangent plane directly in an arbitrary CRS would require deeper analysis
+   of the CRS datum/ellipsoid and axis conventions.
+
+.. important::
+   If you work with a specific CRS **realization** (e.g. a particular ETRS89/ETRF frame or a national realization),
+   you must use the correct EPSG code for that system/realization. To avoid subtle offsets, make sure that for your mapper
+   (rasters, meshes, reference layers) you also use then the correct **realization/datum** that mapper data was derived from.
+
+   This is a broad topic and we will not further at the moment cover that more specific.
+
+   Time-dependent transformations (e.g. plate motion) are currently not considered because the CoordinateTransformer do not
+   accept a coordinate's epoch/time. If you need epoch-aware transformations, use ``pyproj`` directly.
+
+Vertical reference (Z) options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ ``eor_from_meta``, ``image_from_meta`` and ``ImageBuilder.eor()`` support different ways to interpret the height component:
+
+- ``vertical_ref="ellipsoidal"`` (default): interpret metadata altitude as **ellipsoidal height** (WGS84).
+- ``vertical_ref="orthometric"``: interpret metadata altitude as **orthometric/geoid height** (EGM2008).
+- ``vertical_ref="relative"``: use a vendor ``RelativeAltitude`` tag (if present) and compute
+  ``z = height_rel + RelativeAltitude``.
+
+``height_rel`` is only used for ``vertical_ref="relative"`` and should be set to the reference height (meters) that the
+relative altitude is measured from (often the take-off height, if known).
+
+UTM output (optional)
+^^^^^^^^^^^^^^^^^^^^^^
+
+By default, ``eor_from_meta`` returns the pose in WGS84 ECEF (``EPSG:4978``). If you prefer a local projected output,
+set ``to_utm=True``. The UTM zone is chosen automatically from the WGS84 lon/lat:
+
+.. code-block:: python
+
+   from weitsicht import eor_from_meta
+
+   eor_res = eor_from_meta(tags.get_all(), to_utm=True)
+   if eor_res.ok:
+       print(eor_res.crs)  # e.g. EPSG:32633+3855 (zone depends on lon/lat)
+       utm_position = eor_res.position
+       utm_orientation = eor_res.orientation  # aligned to the UTM grid (meridian convergence applied)
+   else:
+       print(eor_res.error, eor_res.issues)
+
+.. note::
+   ``to_utm=True`` outputs a compound CRS (UTM + EGM2008 height, ``+3855``). This can require PROJ grid data.
+   If you see missing-grid errors, enable network grids via ``pyproj.network.set_network_enabled(True)`` (see :doc:`top_tips`).
+
+
 Complete image from metadata
 ----------------------------
 
@@ -133,7 +214,8 @@ Complete image from metadata
 
    from weitsicht import image_from_meta
 
-   img_res = image_from_meta(tags)  # accepts MetaTagsBase or MetaTagAll
+   img_res = image_from_meta(tags)  # ECEF output (default)
+   # img_res = image_from_meta(tags, to_utm=True)  # projected UTM output
    if img_res.ok:
        image = img_res.image
        # Assign a mapper later, e.g. image.mapper = MappingHorizontalPlane(...)
@@ -167,6 +249,7 @@ If you want to handle IOR and EOR separately (e.g. use a default IOR but read EO
    builder = ImageFromMetaBuilder(tags)
    ior_res = builder.ior()
    eor_res = builder.eor()
+   # eor_res = builder.eor(to_utm=True)
 
    # Optionally build an image only if both are available
    img_res = builder.image()

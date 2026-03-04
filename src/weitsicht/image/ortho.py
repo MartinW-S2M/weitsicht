@@ -445,6 +445,7 @@ class ImageOrtho(ImageBase):
             ok=True,
             coordinates=mapping_result.coordinates,
             mask=mapping_result.mask,
+            crs=self.crs,
             normals=mapping_result.normals,
             gsd=self.resolution,
             gsd_per_point=gsd_per_point,
@@ -531,6 +532,7 @@ class ImageOrtho(ImageBase):
             gsd=self.resolution,
             gsd_per_point=gsd_per_point,
             area=area,
+            crs=self.crs,
             issues=mapping_result.issues,
         )
 
@@ -595,6 +597,7 @@ class ImageOrtho(ImageBase):
             coordinates=mapping_result.coordinates,
             mask=mapping_result.mask,
             normals=mapping_result.normals,
+            crs=self.crs,
             gsd=self.resolution,
             gsd_per_point=gsd_per_point,
             issues=mapping_result.issues,

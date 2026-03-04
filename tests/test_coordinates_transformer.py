@@ -233,3 +233,41 @@ def test_transform_vector_rejects_zero_vectors():
 
     with pytest.raises(ValueError):
         transformer.transform_vector(np.array([[0.0, 0.0, 0.0]]), np.array([0.0, 0.0, 0.0]))
+
+
+def test_transform_rotation_matrix_identity():
+    crs = CRS("EPSG:25833").to_3d()
+    transformer = CoordinateTransformer(transformer=Transformer.from_crs(crs, crs, always_xy=True))
+
+    start = np.array([531547.645, 5287818.137, 2047.163])
+    rot = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+
+    rot_t = transformer.transform_rotation_matrix(start, rot)
+    assert rot_t.shape == (3, 3)
+    assert np.allclose(rot_t, rot, atol=1e-12, rtol=0.0)
+
+
+def test_transform_rotation_matrix_broadcasts_single_rotation():
+    crs = CRS("EPSG:25833").to_3d()
+    transformer = CoordinateTransformer(transformer=Transformer.from_crs(crs, crs, always_xy=True))
+
+    start = np.array([[0.0, 0.0, 0.0], [10.0, 20.0, 30.0]])
+    rot = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+
+    rot_t = transformer.transform_rotation_matrix(start, rot)
+    assert rot_t.shape == (2, 3, 3)
+    assert np.allclose(rot_t[0], rot, atol=1e-12, rtol=0.0)
+    assert np.allclose(rot_t[1], rot, atol=1e-12, rtol=0.0)
+
+
+def test_transform_rotation_matrix_orthonormalizes():
+    crs = CRS("EPSG:25833").to_3d()
+    transformer = CoordinateTransformer(transformer=Transformer.from_crs(crs, crs, always_xy=True))
+
+    start = np.array([0.0, 0.0, 0.0])
+    rot_skew = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.01], [0.0, 0.0, 1.0]])
+
+    rot_t = transformer.transform_rotation_matrix(start, rot_skew, orthonormalize=True)
+    assert rot_t.shape == (3, 3)
+    assert np.allclose(rot_t.T @ rot_t, np.eye(3), atol=1e-12, rtol=0.0)
+    assert np.isclose(np.linalg.det(rot_t), 1.0, atol=1e-12, rtol=0.0)
