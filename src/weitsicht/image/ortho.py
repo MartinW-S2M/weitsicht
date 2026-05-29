@@ -115,7 +115,9 @@ class ImageOrtho(ImageBase):
         :type mapper: MappingBase | None
         :return: Image model instance.
         :rtype: ImageOrtho
-        :raises Exception: If rasterio cannot read the file or required metadata is unavailable.
+        :raises FileNotFoundError: If ``path`` does not exist.
+        :raises rasterio.errors.RasterioIOError: If the raster cannot be opened/read.
+        :raises pyproj.exceptions.CRSError: If the dataset CRS cannot be parsed/converted.
         """
 
         if not Path(path).exists():

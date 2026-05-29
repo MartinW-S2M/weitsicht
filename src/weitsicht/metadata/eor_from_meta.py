@@ -48,8 +48,8 @@ def _deg(val):
 
 def rot_body_ned_from_meta(tags: MetaTagAll) -> tuple[Array3x3, bool] | None:
     # Orientation normally in NED and aircraft convention
-    # Some of the tags do actually refere to the image direction of view
-    # Others refere to angles of the aircraft and the camera is mounted looking down
+    # Some of the tags do actually refer to the image direction of view
+    # Others refer to angles of the aircraft and the camera are mounted looking down
 
     xmp_cam_pitch = tags.orientation.xmp_camera_pitch
     xmp_cam_roll = tags.orientation.xmp_camera_roll
@@ -189,9 +189,9 @@ def eor_from_meta(
 
     # First we will check if we are using relative heights
     # The problem is that in old DJI systems the altitude was very bad
-    # But the reference for the relative height was not stored in the meta data
-    # It was often the take-off point but that information is not given normaly if you have only images.
-    # Thus we have that parameter height_rel which states the height the rel_altitude referes to.
+    # But the reference for the relative height was not stored in the meta-data
+    # It was often the take-off point but that information is not given normally if you have only images.
+    # Thus, we have that parameter height_rel which states the height the rel_altitude refers to.
     rel_z_exif = None
     if vertical_ref == "relative":
         rel_z_exif = tags.z_alternatives.rel_altitude
@@ -211,7 +211,7 @@ def eor_from_meta(
             crs_vert_exif = tags.crs.vert_cs or "ellipsoidal"
 
         # Just to be sure, this maybe interfere with vertical ref
-        # TODO this could overrite the vertical_ref specified
+        # TODO this could overwrite the vertical_ref specified
         if tags.crs.horiz_cs is not None:
             crs_hor_exif = tags.crs.horiz_cs
             crs_vert_exif = tags.crs.vert_cs or "ellipsoidal"
@@ -245,7 +245,7 @@ def eor_from_meta(
     else:
         ltp_frame = WGS84LocalTangent.from_crs(x=x_exif, y=y_exif, z=z_exif, crs_s=crs_source)
 
-    # GET the rotation of the iamge in that case UAV/drone
+    # GET the rotation of the image in that case UAV/drone
     # It is supposed to be in NED and axis follow aircraft convention8
     result_rot = rot_body_ned_from_meta(tags=tags)
 
@@ -260,12 +260,12 @@ def eor_from_meta(
     rot_ecef_body = ltp_frame.to_ecef_matrix(rot_body_ned, local_frame="NED")
 
     # We have now the rotation in ecef
-    # Need to convert to allign with camera axis from body axis
+    # Need to convert to align with camera axis from body axis
     if angle_in_direction_of_view:
         rot_ecef_cam = rot_ecef_body @ r_body_to_cam_in_x_facing
     else:
         rot_ecef_cam = rot_ecef_body @ r_body_to_cam_down_facing
-    if to_utm is False:
+    if not to_utm:
         return EORFromMetaResultSuccess(
             ok=True,
             position=ltp_frame.origin_ecef,
@@ -274,7 +274,7 @@ def eor_from_meta(
         )
 
     # FOR UTM projection to calculate we go directly from ell coordinates
-    # So if we already have WGS84 ell coordiantes we can go directly to UTM
+    # So if we already have WGS84 ell coordinates we can go directly to UTM
     # Route for projected output: position in UTM, orientation in UTM referencing to grid north.
 
     lon_deg, lat_deg, h_m = ltp_frame.origin_ell[0], ltp_frame.origin_ell[1], ltp_frame.origin_ell[2]
@@ -285,7 +285,7 @@ def eor_from_meta(
         else:
             origin_ecef = ltp_frame.origin_ecef
             x, y, z, crs_result = point_convert_utm_wgs84_egm2008(
-                crs_source, origin_ecef[0], origin_ecef[1], origin_ecef[2]
+                ltp_frame.crs_ecef, origin_ecef[0], origin_ecef[1], origin_ecef[2]
             )
     except (ValueError, CoordinateTransformationError) as err:
         return ResultFailure(

@@ -272,7 +272,14 @@ class ImageBase:
         :type transformer: CoordinateTransformer | None
         :return: Mapping result.
         :rtype: MappingResult
+        :raises ValueError: If ``points_image`` cannot be parsed as an array of 2D points.
+        :raises NotGeoreferencedError: If the image is not geo-referenced.
+        :raises MapperMissingError: If no mapper is available.
+        :raises CRSInputError: If the mapper rejects CRS/transformer input.
         :raises CoordinateTransformationError: If coordinate transformation fails.
+        :raises MappingBackendError: If the mapping backend fails unexpectedly.
+        :raises WeitsichtError: Base class for all weitsicht exceptions. Catch this to handle any weitsicht error;
+            catch specific subclasses first if you need to distinguish causes.
         """
 
         pass
@@ -285,6 +292,7 @@ class ImageBase:
 
         :return: Position in WGS84 (x, y, z) or ``None``.
         :rtype: tuple[float, float, float] | None
+        :raises CoordinateTransformationError: If coordinate transformation fails.
         """
 
         coordinates = self.position_to_crs(CRS.from_epsg(4979))
@@ -301,6 +309,7 @@ class ImageBase:
 
         :return: GeoJSON ``Point`` mapping or ``None`` if the position is unavailable.
         :rtype: dict | None
+        :raises CoordinateTransformationError: If coordinate transformation fails.
         """
         coordinates = self.position_to_crs(CRS.from_epsg(4979))
         if coordinates is not None:

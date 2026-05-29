@@ -126,7 +126,7 @@ def point_wgs84ell_to_utm(
 
     coo_wgs84 = np.array([[lon_deg, lat_deg, h_m]])
     assert transformer_wgs84 is not None
-    coo_utm = transformer_wgs84.transform(*coo_wgs84)
+    coo_utm = transformer_wgs84.transform(coo_wgs84)
 
     x_utm, y_utm, z_geoid = coo_utm[0, :]
     return x_utm, y_utm, z_geoid, utm_crs
