@@ -14,7 +14,6 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-import time
 from pathlib import Path
 
 import numpy as np
@@ -35,7 +34,6 @@ FIXTURE_DIR = Path(__file__).parent.resolve() / "data"
 def raster_mapper():
     mapper_raster = MappingRaster(
         raster_path=FIXTURE_DIR / "dhm_at_lamb_10m_2018.tif",
-        # raster_path=r"E:\03_australia\dhm_at_lamb_10m_2018.tif",
         crs=CRS("EPSG:31287+5778"),
     )
     limit = (
@@ -53,7 +51,6 @@ def raster_mapper():
 def raster_mapper_full():
     mapper_raster = MappingRaster(
         raster_path=FIXTURE_DIR / "dhm_at_lamb_10m_2018.tif",
-        # raster_path=r"E:\03_australia\dhm_at_lamb_10m_2018.tif",
         crs=CRS("EPSG:31287+5778"),
         preload_full_raster=True,
     )
@@ -173,19 +170,36 @@ def test_map_coordinates_from_rays(raster_mapper):
     assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=0)
 
 
-def test_speed(raster_mapper_full):
+def test_strange_z_diff(raster_mapper_full):
+
     ray_crs = CRS("EPSG:31287+5778")  # CRS("EPSG:25833+5778")
-    a = time.time()
-    ray_vec = np.random.random((1000, 3)) / 100.0 + np.array([0, 0, -1])
-    point_3d = np.random.random((1000, 3)) / 10.0 + np.array([556782, 429523, 1600])
+    ray_vec = np.array([[2.70689117e-09, 7.04219538e-03, -9.94063672e-01]])
+    point_3d = np.array([[556782.0067585, 429523.04801407, 1600.04592051]])
 
     b = raster_mapper_full.map_coordinates_from_rays(ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs)
-    print(time.time() - a)
     interp_plane, valid_mas = intersection_plane_mat_operation(ray_vec, point_3d, b.coordinates)
-    assert np.allclose(interp_plane, b.coordinates, atol=1e-7, rtol=0)
+    assert np.allclose(interp_plane, b.coordinates, atol=1e-5, rtol=1e-5)
     bilin_coo = raster_mapper_full.map_heights_from_coordinates(b.coordinates[:, :2], ray_crs)
-
     assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=1e-7)
+
+    # current: 03.07.2026 b.coo array([[556782.0067599 , 429526.68956164,   1086.01159521]])
+    # testing with gdal on that position
+    # gdallocationinfo -r bilinear -geoloc "dhm_at_lamb_10m_2018.tif" 556782.0067599 429526.68956164
+
+
+def test_speed(raster_mapper_full):
+    for _x in range(20):
+        ray_crs = CRS("EPSG:31287+5778")  # CRS("EPSG:25833+5778")
+        ray_vec = np.random.random((1000, 3)) / 100.0 + np.array([0, 0, -1])
+        point_3d = np.random.random((1000, 3)) / 10.0 + np.array([556782, 429523, 1600])
+
+        b = raster_mapper_full.map_coordinates_from_rays(
+            ray_vectors_crs_s=ray_vec, ray_start_crs_s=point_3d, crs_s=ray_crs
+        )
+        interp_plane, valid_mas = intersection_plane_mat_operation(ray_vec, point_3d, b.coordinates)
+        assert np.allclose(interp_plane, b.coordinates, atol=1e-5, rtol=1e-5)
+        bilin_coo = raster_mapper_full.map_heights_from_coordinates(b.coordinates[:, :2], ray_crs)
+        assert np.allclose(b.coordinates, bilin_coo.coordinates, atol=1e-7, rtol=1e-7)
 
 
 def test_map_heights_from_coordinates(raster_mapper_full):

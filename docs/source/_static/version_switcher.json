@@ -5,7 +5,11 @@
     "preferred": true
   },
   {
-    "version": "v0.0.2",
+    "version": "v0.0.4",
+    "url": "https://weitsicht.readthedocs.io/en/v0.0.3/"
+  },
+  {
+    "version": "v0.0.3",
     "url": "https://weitsicht.readthedocs.io/en/v0.0.3/"
   },
   {

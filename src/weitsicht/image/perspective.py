@@ -651,8 +651,8 @@ class ImagePerspective(ImageBase):
         coordinates: ArrayNx3,
         normals: ArrayNx3,
         mask: MaskN_,
-        is_undistorted: bool,
         *,
+        is_undistorted: bool = False,
         pixel_step: float = 1.0,
     ) -> tuple[float | None, ArrayN_]:
         """Estimate GSD for mapped points.
@@ -694,15 +694,18 @@ class ImagePerspective(ImageBase):
         # Fallback: approximate per-point GSD via range/focal length (still varies with distance).
         # If surface normals are available, scale by 1 / cos(incidence) to approximate the
         # footprint on the local tangent plane at the intersection point.
-        view_vec = self._position - _coordinates
-        dist = np.linalg.norm(view_vec, axis=1)
+        view_vec = _coordinates - self._position
+        slant_range = np.linalg.norm(view_vec, axis=1)
+
+        main_ray = -self._orientation.matrix[:, 2]
+        optical_depth = np.sum(view_vec * main_ray, axis=1)
 
         # Default to no correction (cos=1) for missing/invalid normals.
         cos_incidence = np.ones((n_points,), dtype=np.float64)
 
         normal_len = np.linalg.norm(_normals, axis=1)
         valid_normals = np.isfinite(_normals).all(axis=1) & (normal_len > 0.0)
-        valid_view = np.isfinite(view_vec).all(axis=1) & np.isfinite(dist) & (dist > 0.0)
+        valid_view = np.isfinite(view_vec).all(axis=1) & np.isfinite(slant_range) & (slant_range > 0.0)
 
         normals_unit = np.full_like(_normals, np.nan)
         if np.any(valid_normals):
@@ -710,7 +713,7 @@ class ImagePerspective(ImageBase):
 
         view_unit = np.full_like(view_vec, np.nan)
         if np.any(valid_view):
-            view_unit[valid_view, :] = view_vec[valid_view, :] / dist[valid_view, None]
+            view_unit[valid_view, :] = view_vec[valid_view, :] / slant_range[valid_view, None]
 
         valid_inc = valid_normals & valid_view & mask
         min_cos = 1e-6
@@ -718,7 +721,7 @@ class ImagePerspective(ImageBase):
             cos_raw = np.abs(np.sum(normals_unit[valid_inc, :] * view_unit[valid_inc, :], axis=1))
             cos_incidence[valid_inc] = np.clip(cos_raw, min_cos, 1.0)
 
-        gsd_approx = (dist / self._camera.focal_length_for_gsd_in_pixel) / cos_incidence
+        gsd_approx = (optical_depth / self._camera.focal_length_for_gsd_in_pixel) / cos_incidence
         gsd_per_point[mask] = gsd_approx[mask]
 
         # Neighbour rays: choose direction so that we stay inside image bounds for border points.
@@ -744,11 +747,11 @@ class ImagePerspective(ImageBase):
         ray_vec_dy = ray_vec_neighbours[n_points:, :]
 
         # Advanced GSD: chord length between rays evaluated at the point distance.
-        valid_adv = mask & np.isfinite(dist) & (dist > 0)
+        valid_adv = mask & np.isfinite(slant_range) & (slant_range > 0)
         if np.any(valid_adv):
             # Fallback: use chord length on the range sphere, corrected by incidence angle.
-            gsd_x_chord = dist * np.linalg.norm(ray_vec_dx - _ray_vectors, axis=1) / np.abs(step_x)
-            gsd_y_chord = dist * np.linalg.norm(ray_vec_dy - _ray_vectors, axis=1) / np.abs(step_y)
+            gsd_x_chord = slant_range * np.linalg.norm(ray_vec_dx - _ray_vectors, axis=1) / np.abs(step_x)
+            gsd_y_chord = slant_range * np.linalg.norm(ray_vec_dy - _ray_vectors, axis=1) / np.abs(step_y)
             gsd_adv = ((gsd_x_chord + gsd_y_chord) / 2.0) / cos_incidence
 
             # If normals are valid, intersect neighbour rays with the local tangent plane at the

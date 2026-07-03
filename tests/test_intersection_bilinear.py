@@ -1,6 +1,7 @@
 import numpy as np
 
 from weitsicht.geometry.coplanar_collinear import is_coplanar
+from weitsicht.geometry.interpolation_bilinear import bilinear_interpolation
 from weitsicht.geometry.intersection_bilinear import multilinear_poly_intersection
 
 
@@ -113,3 +114,48 @@ def test_multilinear_poly_intersection():
 
     interp = multilinear_poly_intersection(points, pos, ray)
     assert interp is None
+
+
+def test_multilinear_poly_intersection_matches_bilinear_interpolation_with_large_coordinates():
+    points = np.array(
+        [
+            [556780.0, 429520.0, 1086.5],
+            [556780.0, 429530.0, 1086.1],
+            [556790.0, 429520.0, 1085.7],
+            [556790.0, 429530.0, 1085.2],
+        ]
+    )
+    pos = np.array([556782.0067585, 429523.04801407, 1600.04592051])
+    ray = np.array([2.70689117e-09, 7.04219538e-03, -9.94063672e-01])
+
+    for z_offset in (0.0, 100_000_000.0):
+        shifted_points = points.copy()
+        shifted_points[:, 2] += z_offset
+        shifted_pos = pos.copy()
+        shifted_pos[2] += z_offset
+
+        interp = multilinear_poly_intersection(shifted_points, shifted_pos, ray)
+
+        assert interp is not None
+        z_bilinear, _normal = bilinear_interpolation(points=shifted_points.tolist(), x=interp[0], y=interp[1])
+        assert np.allclose(interp[2], z_bilinear, atol=1e-7, rtol=0)
+
+
+def test_multilinear_poly_intersection_matches_bilinear_interpolation_for_nearly_linear_ray():
+    points = np.array(
+        [
+            [393.0, 493.0, 1085.64074707],
+            [393.0, 494.0, 1085.69702148],
+            [394.0, 493.0, 1086.88415527],
+            [394.0, 494.0, 1087.1505127],
+        ]
+    )
+    p1 = np.array([393.28004947, 493.30530297, 1100.05846669])
+    p2 = np.array([393.24464358, 493.30530298, 1050.0597213])
+    ray = (p2 - p1) / np.linalg.norm(p2 - p1)
+
+    interp = multilinear_poly_intersection(points, p=p1, r=ray)
+
+    assert interp is not None
+    z_bilinear, _normal = bilinear_interpolation(points=points.tolist(), x=interp[0], y=interp[1])
+    assert np.allclose(interp[2], z_bilinear, atol=1e-10, rtol=0)

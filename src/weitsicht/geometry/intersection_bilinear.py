@@ -17,7 +17,6 @@
 """Ray intersection with a bilinear patch."""
 
 import numpy as np
-from numpy.polynomial import Polynomial
 
 from weitsicht.utils import ArrayNx3, Vector3D
 
@@ -28,10 +27,25 @@ __all__ = [
 ]
 
 
-def _bilinear_coeff(points: ArrayNx3) -> tuple[float, float, float, float]:
-    lin_matrix = np.array([[1, 1, 1, 1], points[:, 0], points[:, 1], points[:, 0] * points[:, 1]]).T
-    a00, a01, a10, a11 = np.linalg.solve(lin_matrix, points[:, 2])
-    return float(a00), float(a01), float(a10), float(a11)
+def _bilinear_coeff(points: ArrayNx3) -> tuple[float, float, float, float, float, float, float]:
+    points = np.asarray(points, dtype=float)
+    points = points[np.lexsort((points[:, 1], points[:, 0]))]
+    (x0, y0, z00), (_x0, y1, z01), (x1, _y0, z10), (_x1, _y1, z11) = points
+
+    if x0 != _x0 or x1 != _x1 or y0 != _y0 or y1 != _y1:
+        raise ValueError("points do not form a rectangle")
+
+    dx = x1 - x0
+    dy = y1 - y0
+    if dx == 0.0 or dy == 0.0:
+        raise ValueError("points do not form a rectangle")
+
+    z_ref = float(points[:, 2].mean())
+    a00 = z00 - z_ref
+    a01 = (z10 - z00) / dx
+    a10 = (z01 - z00) / dy
+    a11 = (z11 - z10 - z01 + z00) / (dx * dy)
+    return float(x0), float(y0), z_ref, float(a00), float(a01), float(a10), float(a11)
 
 
 def _bilinear_normal_from_coeff(a01: float, a10: float, a11: float, x: float, y: float) -> Vector3D:
@@ -43,12 +57,35 @@ def _bilinear_normal_from_coeff(a01: float, a10: float, a11: float, x: float, y:
     return n
 
 
+def _real_polynomial_roots(c0: float, c1: float, c2: float) -> np.ndarray:
+    scale = max(abs(c0), abs(c1), abs(c2), 1.0)
+    tol = 64.0 * np.finfo(float).eps * scale
+
+    if abs(c2) <= tol:
+        if abs(c1) <= tol:
+            return np.array([], dtype=float)
+        return np.array([-c0 / c1], dtype=float)
+
+    discriminant = c1 * c1 - 4.0 * c2 * c0
+    discriminant_tol = 64.0 * np.finfo(float).eps * (c1 * c1 + abs(4.0 * c2 * c0) + 1.0)
+    if discriminant < -discriminant_tol:
+        return np.array([], dtype=float)
+    if abs(discriminant) <= discriminant_tol:
+        return np.array([-c1 / (2.0 * c2)], dtype=float)
+
+    sqrt_discriminant = float(np.sqrt(discriminant))
+    q = -0.5 * (c1 + np.copysign(sqrt_discriminant, c1))
+    if q == 0.0:
+        return np.array([(-c1 - sqrt_discriminant) / (2.0 * c2), (-c1 + sqrt_discriminant) / (2.0 * c2)])
+    return np.array([q / c2, c0 / q], dtype=float)
+
+
 def bilinear_patch_normal(points: ArrayNx3, point: Vector3D) -> Vector3D:
     """Compute the surface normal of the bilinear patch at a given point.
 
-    The bilinear patch is modeled as a height field:
+    The bilinear patch is modeled as a height field in local cell coordinates:
 
-        ``z(x, y) = a00 + a01*x + a10*y + a11*x*y``.
+        ``z(u, v) - z_ref = a00 + a01*u + a10*v + a11*u*v``.
 
     The normal is derived from the implicit form ``F(x,y,z) = z - z(x,y) = 0``:
 
@@ -62,45 +99,49 @@ def bilinear_patch_normal(points: ArrayNx3, point: Vector3D) -> Vector3D:
     :rtype: Vector3D
     """
 
-    _a00, a01, a10, a11 = _bilinear_coeff(points)
-    return _bilinear_normal_from_coeff(a01=a01, a10=a10, a11=a11, x=float(point[0]), y=float(point[1]))
+    x0, y0, _z_ref, _a00, a01, a10, a11 = _bilinear_coeff(points)
+    return _bilinear_normal_from_coeff(
+        a01=a01,
+        a10=a10,
+        a11=a11,
+        x=float(point[0]) - x0,
+        y=float(point[1]) - y0,
+    )
 
 
 def _multilinear_poly_intersection_from_coeff(
     points: ArrayNx3,
     p: Vector3D,
     r: Vector3D,
+    x0: float,
+    y0: float,
+    z_ref: float,
     a00: float,
     a01: float,
     a10: float,
     a11: float,
 ) -> Vector3D | None:
-    poly = Polynomial(
-        [
-            -p[2] + a00 + a01 * p[0] + a10 * p[1] + a11 * p[0] * p[1],
-            -r[2] + a01 * r[0] + a10 * r[1] + a11 * p[0] * r[1] + a11 * p[1] * r[0],
-            a11 * r[0] * r[1],
-        ]
-    )
+    p_x = p[0] - x0
+    p_y = p[1] - y0
+    p_z = p[2] - z_ref
+    c0 = -p_z + a00 + a01 * p_x + a10 * p_y + a11 * p_x * p_y
+    c1 = -r[2] + a01 * r[0] + a10 * r[1] + a11 * p_x * r[1] + a11 * p_y * r[0]
+    c2 = a11 * r[0] * r[1]
 
-    # z = a00 + a01 * x + a10 * y + a11 * x * y
+    # z - z_ref = a00 + a01 * u + a10 * v + a11 * u * v
     # ray = p + r * t
-    # z_ray = p_z + r_z * t
-    # x_ray = p_x + r_x * t
-    # y_ray = p_y + r_y * t
+    # z_ray - z_ref = p_z_shifted + r_z * t
+    # u_ray = p_x - x0 + r_x * t
+    # v_ray = p_y - y0 + r_y * t
 
-    # substitute z with z_ray and x,y of the bilinear polynom with x_ray and y_ray
+    # substitute z with z_ray and u,v of the bilinear polynom with u_ray and v_ray
     # will give us the quadratic equation for t
     # Finding the roots gives the value of t for the intersection points.
 
-    roots = poly.roots()
-
-    roots = roots[np.isreal(roots)]
+    roots = _real_polynomial_roots(c0=c0, c1=c1, c2=c2)
     if len(roots) == 0:
         return None
 
-    # Just to be sure. Maybe there are numerical instabilities
-    roots = np.real(roots)
     p_solutions = p + np.outer(r, roots).T
 
     # points[:,:2].min(axis=0)<= p_solutions[:,:2]
@@ -149,22 +190,39 @@ def multilinear_poly_intersection_with_normal(
     :rtype: tuple[Vector3D, Vector3D] | None
     """
 
-    # z = a00 + a01 * x + a10 * y + a11 * x * y
+    # z - z_ref = a00 + a01 * u + a10 * v + a11 * u * v
     # ray = p + r * t
-    # z_ray = p_z + r_z * t
-    # x_ray = p_x + r_x * t
-    # y_ray = p_y + r_y * t
+    # z_ray - z_ref = p_z_shifted + r_z * t
+    # u_ray = p_x - x0 + r_x * t
+    # v_ray = p_y - y0 + r_y * t
 
-    # substitute z with z_ray and x,y of the bilinear polynom with x_ray and y_ray
+    # substitute z with z_ray and u,v of the bilinear polynom with u_ray and v_ray
     # will give us the quadratic equation for t
     # Finding the roots gives the value of t for the intersection points.
 
-    a00, a01, a10, a11 = _bilinear_coeff(points)
-    intersect = _multilinear_poly_intersection_from_coeff(points=points, p=p, r=r, a00=a00, a01=a01, a10=a10, a11=a11)
+    x0, y0, z_ref, a00, a01, a10, a11 = _bilinear_coeff(points)
+    intersect = _multilinear_poly_intersection_from_coeff(
+        points=points,
+        p=p,
+        r=r,
+        x0=x0,
+        y0=y0,
+        z_ref=z_ref,
+        a00=a00,
+        a01=a01,
+        a10=a10,
+        a11=a11,
+    )
     if intersect is None:
         return None
 
-    normal = _bilinear_normal_from_coeff(a01=a01, a10=a10, a11=a11, x=float(intersect[0]), y=float(intersect[1]))
+    normal = _bilinear_normal_from_coeff(
+        a01=a01,
+        a10=a10,
+        a11=a11,
+        x=float(intersect[0]) - x0,
+        y=float(intersect[1]) - y0,
+    )
     if orient_normal_to_ray and float(np.dot(normal, r)) > 0.0:
         normal = -normal
 
@@ -188,14 +246,25 @@ def multilinear_poly_intersection(points: ArrayNx3, p: Vector3D, r: Vector3D) ->
     :rtype: Vector3D | None
     """
 
-    # z = a00 + a01 * x + a10 * y + a11 * x * y
+    # z - z_ref = a00 + a01 * u + a10 * v + a11 * u * v
     # ray = p + r * t
-    # z_ray = p_z + r_z * t
-    # x_ray = p_x + r_x * t
-    # y_ray = p_y + r_y * t
+    # z_ray - z_ref = p_z_shifted + r_z * t
+    # u_ray = p_x - x0 + r_x * t
+    # v_ray = p_y - y0 + r_y * t
 
-    # substitute z with z_ray and x,y of the bilinear polynom with x_ray and y_ray
+    # substitute z with z_ray and u,v of the bilinear polynom with u_ray and v_ray
     # will give us the quadratic equation for t
 
-    a00, a01, a10, a11 = _bilinear_coeff(points)
-    return _multilinear_poly_intersection_from_coeff(points=points, p=p, r=r, a00=a00, a01=a01, a10=a10, a11=a11)
+    x0, y0, z_ref, a00, a01, a10, a11 = _bilinear_coeff(points)
+    return _multilinear_poly_intersection_from_coeff(
+        points=points,
+        p=p,
+        r=r,
+        x0=x0,
+        y0=y0,
+        z_ref=z_ref,
+        a00=a00,
+        a01=a01,
+        a10=a10,
+        a11=a11,
+    )
