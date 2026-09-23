@@ -33,3 +33,6 @@ def test_to_array_nx3():
 
     arr = to_array_nx3([[100, 100], [100, 100], [100, 100]], fill_z=0)
     np.testing.assert_allclose(arr, np.array([[100, 100, 0], [100, 100, 0], [100, 100, 0]]))
+
+    arr = to_array_nx3([[100, 100], [100, 100], [100, 100]], fill_z=125.00)
+    np.testing.assert_allclose(arr, np.array([[100, 100, 125.00], [100, 100, 125.00], [100, 100, 125.00]]))

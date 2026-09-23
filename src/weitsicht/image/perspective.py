@@ -697,6 +697,7 @@ class ImagePerspective(ImageBase):
         view_vec = _coordinates - self._position
         slant_range = np.linalg.norm(view_vec, axis=1)
 
+        assert self._orientation is not None
         main_ray = -self._orientation.matrix[:, 2]
         optical_depth = np.sum(view_vec * main_ray, axis=1)
 

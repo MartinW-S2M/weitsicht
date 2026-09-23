@@ -136,6 +136,7 @@ def to_array_nx3(
     else:
         if fill_z is not None:
             _array_like_nx3 = np.hstack((_array_like_nx3, np.zeros((_array_like_nx3.shape[0], 1))))
+            _array_like_nx3[:, 2] = _array_like_nx3[:, 2] + fill_z
         else:
             raise ValueError("Dimension of 3D array not fitting")
 

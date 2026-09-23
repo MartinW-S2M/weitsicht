@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -173,7 +173,7 @@ class MappingGeorefArray(MappingBase):
         :return: ``(x, y)`` coordinates in raster CRS.
         :rtype: tuple[``ArrayN_``, ``ArrayN_``]
         """
-        return self.transform * np.vstack((px_col, px_row))
+        return self.transform @ cast(Any, (px_col, px_row))
 
     def coordinate_to_pixel(self, x: ArrayN_, y: ArrayN_) -> tuple[ArrayN_, ArrayN_]:
         """Convert raster CRS coordinates to pixel indices.
@@ -185,8 +185,9 @@ class MappingGeorefArray(MappingBase):
         :return: ``(row, col)`` pixel coordinates.
         :rtype: tuple[``ArrayN_``, ``ArrayN_``]
         """
-        pix_col, pix_row = ~self.transform * np.vstack((x, y))
-        return np.asarray(pix_row), np.asarray(pix_col)
+        # Upgrade to '@' operator, drop np.vstack, and bypass the Pyright warning
+        pix_col, pix_row = (~self.transform) @ cast(Any, (x, y))
+        return pix_row, pix_col
 
     def pixel_valid(self, px_row: ArrayN_, px_col: ArrayN_) -> MaskN_:
         """Vectorized validity check for pixel coordinates.

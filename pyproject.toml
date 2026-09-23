@@ -33,6 +33,7 @@ classifiers = [
 keywords = ["Photogrammetry", "Mapping", "Georefernced Imagery", "Geographical Data", "Monoplotting"]
 
 dependencies = [
+    'affine>=3.0.1',
     'numpy>=1.26.0',
     'pyproj>=3.6.1',
     'shapely>=2.0.1',

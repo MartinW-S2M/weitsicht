@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
 import pyproj.exceptions
@@ -244,7 +244,9 @@ class ImageOrtho(ImageBase):
             "type": self.type.fullname,
             "width": self._width,
             "height": self._height,
-            "geo_transform": self.geo_transform._asdict() if self.geo_transform is not None else None,
+            "geo_transform": {k: getattr(self.geo_transform, k) for k in "abcdefghi"}
+            if self.geo_transform is not None
+            else None,
             "resolution": self._res,
         }
         if self.crs is not None:
@@ -313,13 +315,15 @@ class ImageOrtho(ImageBase):
         if self.geo_transform is None:
             return None
 
-        point_center_2d = self.geo_transform * [self.width / 2.0, self.height / 2.0]
+        point_center_2d = self.geo_transform @ (self.width / 2.0, self.height / 2.0)
 
         point_center_3d = np.array([[point_center_2d[0], point_center_2d[1], 0]])
 
         if self.mapper is not None:
             crs_arg = None if transformer is not None else self._crs
-            mapping_result = self.mapper.map_heights_from_coordinates(point_center_2d, crs_arg, transformer=transformer)
+            mapping_result = self.mapper.map_heights_from_coordinates(
+                np.array(point_center_2d), crs_arg, transformer=transformer
+            )
 
             if mapping_result.ok is True:
                 point_center_3d = mapping_result.coordinates
@@ -383,10 +387,12 @@ class ImageOrtho(ImageBase):
         assert self.geo_transform is not None
 
         gt = cast(Affine, ~self.geo_transform)  # invert
-        x, y = cast(tuple[np.ndarray, np.ndarray], gt * (point_3d_crs[:, 0], point_3d_crs[:, 1]))
-        # x, y = ~self.geo_transform * (point_3d_crs[:, 0], point_3d_crs[:, 1])
+        # old 2.4.0 (affine) code
+        # x, y = cast(tuple[np.ndarray, np.ndarray], gt * (point_3d_crs[:, 0], point_3d_crs[:, 1]))
+        x, y = gt @ cast(Any, (point_3d_crs[:, 0], point_3d_crs[:, 1]))
+        # Re-combine into your raster array
+        raster_coordinates = np.column_stack((x, y))
 
-        raster_coordinates = np.vstack((x, y)).T
         valid_mask = self.image_points_inside(raster_coordinates)
 
         issue = set()
@@ -433,9 +439,9 @@ class ImageOrtho(ImageBase):
         assert mapper_to_use is not None
         assert self.geo_transform is not None
 
-        point_center_2d = self.geo_transform * [self.width / 2.0, self.height / 2.0]
+        point_center_2d = self.geo_transform @ (self.width / 2.0, self.height / 2.0)
         mapping_result = mapper_to_use.map_heights_from_coordinates(
-            point_center_2d, None if transformer is not None else self._crs, transformer=transformer
+            np.array(point_center_2d), None if transformer is not None else self._crs, transformer=transformer
         )
 
         if mapping_result.ok is False:
@@ -504,7 +510,7 @@ class ImageOrtho(ImageBase):
             px = _fp[:, 0]
             py = _fp[:, 1]
 
-        pt_x, pt_y = cast(tuple[np.ndarray, np.ndarray], self.geo_transform * (px, py))
+        pt_x, pt_y = self.geo_transform @ cast(Any, (px, py))
         footprint_points_2d = np.vstack((pt_x, pt_y)).T
         mapping_result = mapper_to_use.map_heights_from_coordinates(
             footprint_points_2d, None if transformer is not None else self._crs, transformer=transformer
@@ -582,8 +588,7 @@ class ImageOrtho(ImageBase):
 
         _points_image = to_array_nx2(points_image)
 
-        pt_x, pt_y = cast(tuple[np.ndarray, np.ndarray], self.geo_transform * (_points_image[:, 0], _points_image[:, 1]))
-
+        pt_x, pt_y = self.geo_transform @ cast(Any, (_points_image[:, 0], _points_image[:, 1]))
         mapping_result = mapper_to_use.map_heights_from_coordinates(
             np.vstack((pt_x, pt_y)).T, None if transformer is not None else self._crs, transformer=transformer
         )

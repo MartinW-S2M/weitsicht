@@ -380,7 +380,7 @@ class MappingRaster(MappingBase):
         )
         return self._georef_array
 
-    def pixel_to_coordinate(self, px_row: float, px_col: float) -> tuple:
+    def pixel_to_coordinate(self, px_row: float, px_col: float) -> tuple[float, float]:
         """Convert pixel indices to coordinates in raster CRS.
 
         :param px_row: Pixel row coordinate
@@ -390,7 +390,7 @@ class MappingRaster(MappingBase):
         :return: ``(x, y)`` coordinate in raster CRS.
         :rtype: tuple[float, float]
         """
-        return self.transform * (px_col, px_row)
+        return self.transform @ (px_col, px_row)
 
     def pixel_valid(self, px_row: float, px_col: float) -> bool:
         """Return whether pixel coordinates are within raster bounds.
@@ -441,8 +441,7 @@ class MappingRaster(MappingBase):
         :return: ``(row, col)`` pixel coordinates as floats.
         :rtype: tuple[float, float]
         """
-        gt = cast(Affine, ~self.transform)
-        pix_col, pix_row = cast(tuple[float, float], gt * (x_crs, y_crs))
+        pix_col, pix_row = ~self.transform @ (x_crs, y_crs)
 
         return pix_row, pix_col
 
@@ -459,7 +458,7 @@ class MappingRaster(MappingBase):
         :rtype: tuple[``ArrayN_``, ``ArrayN_``]
         """
 
-        pix_col, pix_row = ~self.transform * np.vstack((x, y))
+        pix_col, pix_row = (~self.transform) @ cast(Any, (x, y))
         return pix_row, pix_col
 
     def get_coordinate_height(self, x_crs: float, y_crs: float) -> float | None:
