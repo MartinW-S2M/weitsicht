@@ -20,7 +20,7 @@ import pytest
 from pyproj import CRS
 
 import weitsicht
-from weitsicht.transform.utm_converter import get_zone, point_convert_utm_wgs84_egm2008
+from weitsicht.transform.utm_converter import get_zone, is_wgs84_crs, point_convert_utm_wgs84_egm2008
 
 
 def test_get_zone():
@@ -31,6 +31,17 @@ def test_get_zone():
 def test_get_zone_fails():
     with pytest.raises(ValueError):
         get_zone(longitude=200, latitude=48)
+
+
+def test_is_wgs84_crs():
+    assert is_wgs84_crs(4326) is True
+    assert is_wgs84_crs("EPSG:4979") is True
+    assert is_wgs84_crs(CRS.from_epsg(4326).to_wkt()) is True
+    assert is_wgs84_crs(CRS.from_epsg(4979).to_wkt()) is True
+
+    assert is_wgs84_crs("EPSG:32633") is False
+    assert is_wgs84_crs("EPSG:4258") is False
+    assert is_wgs84_crs("not-a-crs") is False
 
 
 def test_wgs84_utm_point_converter():

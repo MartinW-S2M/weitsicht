@@ -32,7 +32,7 @@ from weitsicht.metadata.metadata_results import (
 )
 from weitsicht.metadata.tag_systems.tag_base import MetaTagAll
 from weitsicht.transform.rotation import Rotation
-from weitsicht.transform.utm_converter import point_convert_utm_wgs84_egm2008, point_wgs84ell_to_utm
+from weitsicht.transform.utm_converter import is_wgs84_crs, point_convert_utm_wgs84, point_wgs84ell_to_utm
 from weitsicht.transform.wgs84_local_tangent import WGS84LocalTangent
 from weitsicht.utils import Array3x3, ResultFailure
 
@@ -141,11 +141,13 @@ def eor_from_meta(
     vertical_ref: str = "ellipsoidal",
     height_rel: float = 0.0,
     to_utm: bool = False,
+    to_geoid_height:bool = True,
 ) -> EORFromMetaResult:
     """Extract exterior orientation (position + rotation + CRS) from metadata tags.
 
     If ``to_utm`` is ``True`` the returned position is expressed in a local projected coordinate system
-    derived from the input CRS (typically WGS84) by converting to WGS84-UTM with EGM2008 heights.
+    derived from the input CRS (typically WGS84) by converting to WGS84-UTM.
+    With "to_geoid_height" its possible to specify if output should be in EGM2008 heights or ellipsoid heights.
     The orientation is returned in the corresponding UTM grid ENU frame (i.e. true ENU rotated by
     meridian convergence).
 
@@ -164,6 +166,8 @@ def eor_from_meta(
     :type height_rel: float
     :param to_utm: Whether to output the position in WGS84-UTM (EGM2008) instead of ECEF, defaults to ``False``.
     :type to_utm: bool
+    :param to_geoid_height: If ``True``, the output will be in EGM2008 heights
+    :type to_geoid_height: bool
     :return: Successful EOR result or a failure result.
     :rtype: EORFromMetaResult
     """
@@ -230,7 +234,7 @@ def eor_from_meta(
             crs_vert = CRS.from_user_input(crs_vert_exif)
             crs_source = CompoundCRS(f"{crs_hor_exif}+{crs_vert_exif}", [crs_hor, crs_vert])
 
-        is_wgs84 = True
+        is_wgs84 = is_wgs84_crs(crs_hor_exif)
     # We assume that even if the position is given in another CRS,
     # still the angles are that one of the local tangent plane at this point
     # Therefore we transform only the position if a crs is given as parameter
@@ -281,11 +285,11 @@ def eor_from_meta(
 
     try:
         if is_wgs84:
-            x, y, z, crs_result = point_wgs84ell_to_utm(crs_source, lon_deg, lat_deg, h_m)
+            x, y, z, crs_result = point_wgs84ell_to_utm(crs_source, lon_deg, lat_deg, h_m, to_geoid_height)
         else:
             origin_ecef = ltp_frame.origin_ecef
-            x, y, z, crs_result = point_convert_utm_wgs84_egm2008(
-                ltp_frame.crs_ecef, origin_ecef[0], origin_ecef[1], origin_ecef[2]
+            x, y, z, crs_result = point_convert_utm_wgs84(
+                ltp_frame.crs_ecef, origin_ecef[0], origin_ecef[1], origin_ecef[2],to_geoid_height
             )
     except (ValueError, CoordinateTransformationError) as err:
         return ResultFailure(

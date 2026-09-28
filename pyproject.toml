@@ -57,6 +57,7 @@ coverage = [
 ]
 
 docs = [
+    'sphinx',
     'pydata_sphinx_theme',
     'sphinx-design',
 ]
@@ -67,6 +68,7 @@ develop = [
     "ruff",
     "pytest>=8.0.0",
     "coverage>=7.5.4",
+    'sphinx',
     "pydata_sphinx_theme",
     "sphinx-design",
 ]

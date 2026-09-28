@@ -264,7 +264,10 @@ class Rotation:
             # Gimbal lock: alpha and kappa are not uniquely defined for zeta ~ 0 or pi.
             # Convention here: set alpha=0 and fold everything into kappa.
             alpha_internal = 0.0
-            kappa_internal = float(np.arctan2(self._rotation_matrix[1, 0], self._rotation_matrix[0, 0]))
+            if cos_zeta > 0:
+                kappa_internal = float(np.arctan2(self._rotation_matrix[1, 0], self._rotation_matrix[0, 0]))
+            else:
+                kappa_internal = float(np.arctan2(self._rotation_matrix[1, 0], -self._rotation_matrix[0, 0]))
         else:
             alpha_internal = float(np.arctan2(self._rotation_matrix[1, 2], self._rotation_matrix[0, 2]))
             kappa_internal = float(np.arctan2(self._rotation_matrix[2, 1], -self._rotation_matrix[2, 0]))

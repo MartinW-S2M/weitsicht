@@ -129,7 +129,13 @@ Exterior orientation (EOR)
 .. important::
    The estimated image pose (EOR: position + orientation) is returned in **WGS84 geocentric / ECEF**
    (``EPSG:4978``) by default (i.e. unless you set ``to_utm=True``). You can always inspect the CRS from the result
-   (``eor_res.crs``) or, when building a full image, via ``image.crs``.
+   (``eor_res.crs``) or, when building a full image, via ``image.crs``. With ``to_geoid_height (default: True)`` you can specify if the result should be in EGM2008 or ellipsoidal heights.
+
+
+.. note::
+   Depending on the input CRS or the specified vertical output system (e.g. geoid heights), PROJ grid data could be required.
+   If you see missing-grid errors, enable network grids via ``pyproj.network.set_network_enabled(True)`` (see :doc:`top_tips`).
+
 
 CRS override (optional)
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -188,7 +194,9 @@ UTM output (optional)
 ^^^^^^^^^^^^^^^^^^^^^^
 
 By default, ``eor_from_meta`` returns the pose in WGS84 ECEF (``EPSG:4978``). If you prefer a local projected output,
-set ``to_utm=True``. The UTM zone is chosen automatically from the WGS84 lon/lat:
+set ``to_utm=True``. With ``to_geoid_height (default: True)`` you can specify if the result should be in EGM2008 or ellipsoidal heights.
+
+The UTM zone is chosen automatically from the WGS84 lon/lat:
 
 .. code-block:: python
 
@@ -203,7 +211,7 @@ set ``to_utm=True``. The UTM zone is chosen automatically from the WGS84 lon/lat
        print(eor_res.error, eor_res.issues)
 
 .. note::
-   ``to_utm=True`` outputs a compound CRS (UTM + EGM2008 height, ``+3855``). This can require PROJ grid data.
+   ``to_utm=True and to_geoid_height=True (default: True)`` outputs a compound CRS (UTM + EGM2008 height). This can require PROJ grid data.
    If you see missing-grid errors, enable network grids via ``pyproj.network.set_network_enabled(True)`` (see :doc:`top_tips`).
 
 

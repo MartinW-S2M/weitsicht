@@ -29,6 +29,32 @@ def test_from_apk():
     assert np.allclose(np.array([np.deg2rad(30), np.deg2rad(20), np.deg2rad(-10)]), r.apk, atol=1e-9, rtol=0)
 
 
+def test_apk_singular_zeta_zero():
+    r = Rotation.from_apk_degree(35, 0, 10)
+
+    assert np.allclose(np.array([0, 0, 45]), r.apk_degree, atol=1e-9, rtol=0)
+    assert np.allclose(Rotation.from_apk(*r.apk).matrix, r.matrix, atol=1e-9, rtol=0)
+
+
+def test_apk_singular_zeta_pi():
+    r = Rotation.from_apk_degree(35, 180, 10)
+
+    assert np.allclose(np.array([0, 180, -25]), r.apk_degree, atol=1e-9, rtol=0)
+    assert np.allclose(Rotation.from_apk(*r.apk).matrix, r.matrix, atol=1e-9, rtol=0)
+
+
+def test_apk_singular_zeta_zero_from_matrix():
+    r = Rotation(np.diag([-1.0, -1.0, 1.0]))
+
+    assert np.allclose(Rotation.from_apk(*r.apk).matrix, r.matrix, atol=1e-9, rtol=0)
+
+
+def test_apk_singular_zeta_pi_from_matrix():
+    r = Rotation(np.diag([-1.0, 1.0, -1.0]))
+
+    assert np.allclose(Rotation.from_apk(*r.apk).matrix, r.matrix, atol=1e-9, rtol=0)
+
+
 def test_matrix():
     mat_test = np.array(
         [

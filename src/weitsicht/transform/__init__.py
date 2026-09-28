@@ -20,7 +20,12 @@ import logging
 
 from weitsicht.transform.coordinates_transformer import CoordinateTransformer
 from weitsicht.transform.rotation import Rotation
-from weitsicht.transform.utm_converter import get_zone, point_convert_utm_wgs84_egm2008, point_wgs84ell_to_utm
+from weitsicht.transform.utm_converter import (
+    get_zone,
+    is_wgs84_crs,
+    point_convert_utm_wgs84_egm2008,
+    point_wgs84ell_to_utm,
+)
 from weitsicht.transform.wgs84_local_tangent import WGS84LocalTangent
 
 __all__ = [
@@ -28,6 +33,7 @@ __all__ = [
     "Rotation",
     "WGS84LocalTangent",
     "get_zone",
+    "is_wgs84_crs",
     "point_convert_utm_wgs84_egm2008",
     "point_wgs84ell_to_utm",
 ]
