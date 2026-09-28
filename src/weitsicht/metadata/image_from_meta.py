@@ -57,22 +57,31 @@ class ImageFromMetaBuilder:
         vertical_ref: str = "ellipsoidal",
         height_rel: float = 0.0,
         to_utm: bool = False,
-        to_geoid_height:bool = True,
+        to_geoid_height: bool = True,
     ) -> EORFromMetaResult:
         if self._eor is None:
             self._eor = eor_from_meta(
-                tags=self.tags, crs=crs, vertical_ref=vertical_ref, height_rel=height_rel,
-                to_utm=to_utm,to_geoid_height=to_geoid_height
+                tags=self.tags,
+                crs=crs,
+                vertical_ref=vertical_ref,
+                height_rel=height_rel,
+                to_utm=to_utm,
+                to_geoid_height=to_geoid_height,
             )
         return self._eor
 
     def image(
-        self, crs: CRS | None = None, vertical_ref: str = "ellipsoidal", height_rel: float = 0.0, to_utm: bool = False,
-            to_geoid_height: bool = True
+        self,
+        crs: CRS | None = None,
+        vertical_ref: str = "ellipsoidal",
+        height_rel: float = 0.0,
+        to_utm: bool = False,
+        to_geoid_height: bool = True,
     ) -> ImageFromMetaResult:
         ior_res = self.ior()
-        eor_res = self.eor(crs=crs, vertical_ref=vertical_ref, height_rel=height_rel,
-                           to_utm=to_utm,to_geoid_height=to_geoid_height)
+        eor_res = self.eor(
+            crs=crs, vertical_ref=vertical_ref, height_rel=height_rel, to_utm=to_utm, to_geoid_height=to_geoid_height
+        )
 
         if ior_res.ok is False or eor_res.ok is False:
             errors: list[str] = []
@@ -127,5 +136,6 @@ def image_from_meta(
     :rtype: ImageFromMetaResult
     """
 
-    return ImageFromMetaBuilder(tags).image(crs=crs, vertical_ref=vertical_ref, height_rel=height_rel,
-                                            to_utm=to_utm, to_geoid_height=to_geoid_height)
+    return ImageFromMetaBuilder(tags).image(
+        crs=crs, vertical_ref=vertical_ref, height_rel=height_rel, to_utm=to_utm, to_geoid_height=to_geoid_height
+    )

@@ -141,7 +141,7 @@ def eor_from_meta(
     vertical_ref: str = "ellipsoidal",
     height_rel: float = 0.0,
     to_utm: bool = False,
-    to_geoid_height:bool = True,
+    to_geoid_height: bool = True,
 ) -> EORFromMetaResult:
     """Extract exterior orientation (position + rotation + CRS) from metadata tags.
 
@@ -289,7 +289,7 @@ def eor_from_meta(
         else:
             origin_ecef = ltp_frame.origin_ecef
             x, y, z, crs_result = point_convert_utm_wgs84(
-                ltp_frame.crs_ecef, origin_ecef[0], origin_ecef[1], origin_ecef[2],to_geoid_height
+                ltp_frame.crs_ecef, origin_ecef[0], origin_ecef[1], origin_ecef[2], to_geoid_height
             )
     except (ValueError, CoordinateTransformationError) as err:
         return ResultFailure(

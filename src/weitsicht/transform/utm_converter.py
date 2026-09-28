@@ -27,7 +27,13 @@ from pyproj.exceptions import CRSError
 
 from weitsicht.transform.coordinates_transformer import CoordinateTransformer
 
-__all__ = ["get_zone", "is_wgs84_crs", "point_convert_utm_wgs84_egm2008","point_convert_utm_wgs84", "point_wgs84ell_to_utm"]
+__all__ = [
+    "get_zone",
+    "is_wgs84_crs",
+    "point_convert_utm_wgs84_egm2008",
+    "point_convert_utm_wgs84",
+    "point_wgs84ell_to_utm",
+]
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +100,7 @@ def point_convert_utm_wgs84_egm2008(
     :raises CoordinateTransformationError: If a coordinate transformation cannot be established or applied.
     """
     return point_convert_utm_wgs84(crs_s, x, y, z, True)
+
 
 def point_convert_utm_wgs84(
     crs_s: CRS, x: float, y: float, z: float, to_geoid_height: bool = True

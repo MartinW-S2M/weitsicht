@@ -23,6 +23,7 @@ from weitsicht.transform.rotation import Rotation
 from weitsicht.transform.utm_converter import (
     get_zone,
     is_wgs84_crs,
+    point_convert_utm_wgs84,
     point_convert_utm_wgs84_egm2008,
     point_wgs84ell_to_utm,
 )
@@ -35,6 +36,7 @@ __all__ = [
     "get_zone",
     "is_wgs84_crs",
     "point_convert_utm_wgs84_egm2008",
+    "point_convert_utm_wgs84",
     "point_wgs84ell_to_utm",
 ]
 
