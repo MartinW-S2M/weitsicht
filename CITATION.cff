@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+title: weitsicht
+message: >-
+  If you use this software, please cite it using the
+  DOI from zenodo.
+type: software
+authors:
+  - given-names: Martin
+    family-names: Wieser
+    email: martin.wieser@geo.tuwien.ac.at
+    affiliation: TU Wien
+    orcid: 'https://orcid.org/0009-0005-9870-6494'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.20443144
+repository-code: 'https://github.com/MartinW-S2M/weitsicht'
+abstract: >-
+  A Python package that enables further use of georeferenced
+  images for mapping (plane, raster, mesh) and projection
+  between image space and 3D.
+keywords:
+  - geographical-data
+  - mapping
+  - monplotting
+  - photogrammetry
+license: Apache-2.0

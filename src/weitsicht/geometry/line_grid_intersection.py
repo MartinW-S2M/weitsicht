@@ -18,7 +18,7 @@
 
 import numpy as np
 
-__all__ = ["vector_projection", "raster_index_p1_p2", "line_grid_intersection_points"]
+__all__ = ["line_grid_intersection_points"]
 
 
 def vector_projection(p1, p2, g_1):

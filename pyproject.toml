@@ -9,8 +9,9 @@ where = ["src"]
 name = "weitsicht"
 version = "0.0.5"
 authors = [
-  { name="Martin Wieser"},
+  { name="Martin Wieser", email="martin.wieser@geo.tuwien.ac.at"},
 ]
+
 description = "A package that uses image georeferencing for monoplotting (single-image pixel-to-3D ray/surface intersection) and for projecting 3D coordinates into an image. Supports perspective imagery and orthophotos."
 readme = "readme.md"
 license = {file = "LICENSE"}

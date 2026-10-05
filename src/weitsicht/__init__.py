@@ -48,7 +48,7 @@ from weitsicht.geometry.coplanar_collinear import is_coplanar
 from weitsicht.geometry.interpolation_bilinear import bilinear_interpolation
 from weitsicht.geometry.intersection_bilinear import multilinear_poly_intersection
 from weitsicht.geometry.intersection_plane import intersection_plane, intersection_plane_mat_operation
-from weitsicht.geometry.line_grid_intersection import line_grid_intersection_points, raster_index_p1_p2, vector_projection
+from weitsicht.geometry.line_grid_intersection import line_grid_intersection_points
 from weitsicht.image import get_image_from_dict
 from weitsicht.image.base_class import ImageBase, ImageType
 from weitsicht.image.image_batch import ImageBatch
@@ -131,8 +131,6 @@ __all__ = [
     "multilinear_poly_intersection",
     "intersection_plane",
     "intersection_plane_mat_operation",
-    "vector_projection",
-    "raster_index_p1_p2",
     "line_grid_intersection_points",
     "ProjectionResult",
     "MappingResult",
