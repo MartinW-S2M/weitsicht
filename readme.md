@@ -24,10 +24,11 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/MartinW-S2M/weitsicht/main.svg)](https://results.pre-commit.ci/latest/github/MartinW-S2M/weitsicht/main)
 &emsp;&emsp;![Docs passing](https://app.readthedocs.org/projects/weitsicht/badge/?version=latest)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20443144.svg)](https://doi.org/10.5281/zenodo.20443144)
 
 **Python package to use the direct geo-reference information of images for mapping and projection.**
 
-Its designed to simplify the use and implementation of functions and classes needed all the way from image points to mapped
+It is designed to simplify the use and implementation of functions and classes needed all the way from image points to mapped
 3d points or the other way around from 3d point to image points.
 Additionally, it is easy to get information like mapped image footprints, center points or transform them to other coordinate systems. Single-image ray intersection with a ground/3D model is often called **Monoplotting** (in ``weitsicht`` this is what the image ``map_*`` methods like ``map_points`` / ``map_center_point`` / ``map_footprint`` do with a mapper).
 
@@ -51,7 +52,7 @@ Currently, it is possible to use perspective and ortho-imagery and for mapping a
 
 - **Monoplotting/Mapping**, map the image’s center-point and footprint (image extend) or image point easily.
 - **Projection**, get the pixel position of 3D coordinates.
-- **CRS**, weitsicht handles coordinate system conversions (to some extend)
+- **CRS**, weitsicht handles coordinate system conversions (to some extent)
 - **Perspective Image and Camera**, mathematic model of your digital camera and pose.
 - **Ortho imagery**, use ortho imagery to map contant or convert 2D coordinates to 3D.
 - **Mapper Classes**, several mapper classes can be used to map your pixel data: HorizontalPlane, Raster, Mesh
@@ -101,7 +102,7 @@ In the `weitsicht` directory (same one where you found this file after cloning t
 ```
 
 Tests use ``pytest`` and live in the **tests** folder. As well all scripts within **examples** are tested.
-For testing Internet access has to be available as pyproj will download needed rasters (e.g EGM2008 earth gravity model)
+For testing Internet access has to be available as pyproj will download needed rasters (e.g. EGM2008 earth gravity model)
 Alternative its possible to tell pyproj to use local stored grids/data - see [pyproj-datadir](https://pyproj4.github.io/pyproj/stable/api/datadir.html)
 
 ### Installation of 3rd-party dependencies
@@ -111,7 +112,7 @@ To provide a full simple workflow a package to read metadata is needed. see [Dep
 
 ### Python
 weitsicht runs on **Python 3.10+**.
-weitsicht has been tested on Windows, Linux and MacOS, and probably also runs on other Unix-like platforms.
+weitsicht has been tested on Windows, Linux and macOS, and probably also runs on other Unix-like platforms.
 
 ### Packages
   It relies only on well-developed packages
@@ -123,7 +124,7 @@ weitsicht has been tested on Windows, Linux and MacOS, and probably also runs on
 
 Additionally, to provide a workflow for drone imagery the metadata from images has to be extracted.
 You can use Phil Harvey's exiftool together with [PyExifTool](https://sylikc.github.io/pyexiftool/index.html).
-Phil Harvey's tool provides one of the most complete metadata reader for most image formats, including raw camera files. `weitsicht` provides an interface to implement different meta-data reader, but currently only a parser for tags from PyExifTool is implemented. A exiv2 parser would be very welcome as contributions.
+Phil Harvey's tool provides one of the most complete metadata reader for most image formats, including raw camera files. `weitsicht` provides an interface to implement different meta-data reader, but currently only a parser for tags from PyExifTool is implemented. An exiv2 parser would be very welcome as contributions.
 
 ## Documentation
 The current documentation is available at [weitsicht.readthedocs.io](https://weitsicht.readthedocs.io)
@@ -135,12 +136,12 @@ ANy contributions are welcome for extending documentation.
 
 When WISDAM underwent a major refactoring in 2024/2025, I decided it was a good time to split the GUI and the geometric foundation into two parts. At the same time, there was growing interest in these functions from researchers with little to no background in photogrammetry/computer vision who wanted to work with aerial (especially drone) imagery without diving into packages like ``OpenCV`` or SfM tools.
 
-**WISDAMapp (Wildlife Imagery Survey – Detection and Mapping)** is a python GUI framework based on QT for the digitization and metadata enrichment of objects digitized in images and ortho-photos. Geo-referenced imagery can be used to map digitized objects to 3D or project them back into images for the purpose of grouping. Its used in wildlife monitoring where statistics about the appearance of certain animals are of importance.
+**WISDAMapp (Wildlife Imagery Survey – Detection and Mapping)** is a python GUI framework based on QT for the digitization and metadata enrichment of objects digitized in images and ortho-photos. Geo-referenced imagery can be used to map digitized objects to 3D or project them back into images for the purpose of grouping. It is used in wildlife monitoring where statistics about the appearance of certain animals are of importance.
 
 **The WISDAMapp repository can be found under http://www.github.com/WISDAMapp/** and the project webpage under http://wisdamapp.org .
 
 The temporary package was called WISDAMcore and is provided for legacy reasons as long as WISDAMapp is not fully switched to **weitsicht**.
-Currently WISDAMapp undergoes refactoring to switch from the old WISDAMcore to **weitsicht**.
+Currently, WISDAMapp undergoes refactoring to switch from the old WISDAMcore to **weitsicht**.
 
 
 ## Goals

@@ -12,7 +12,7 @@ authors:
     orcid: 'https://orcid.org/0009-0005-9870-6494'
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.20443144
+    value: https://doi.org/10.5281/zenodo.20443144
 repository-code: 'https://github.com/MartinW-S2M/weitsicht'
 abstract: >-
   A Python package that enables further use of georeferenced
@@ -21,6 +21,6 @@ abstract: >-
 keywords:
   - geographical-data
   - mapping
-  - monplotting
+  - monoplotting
   - photogrammetry
 license: Apache-2.0
