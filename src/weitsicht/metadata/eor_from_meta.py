@@ -151,9 +151,9 @@ def eor_from_meta(
     The orientation is returned in the corresponding UTM grid ENU frame (i.e. true ENU rotated by
     meridian convergence).
 
-    If ``to_utm`` is ``False`` the pose is returned in WGS84 ECEF (EPSG:4978).
+    If ``to_utm`` is ``False`` the pose is returned in WGS84 ECEF (``EPSG:4978``).
 
-    If XMP tags ``HorizCS``/``VertCS`` are missing, defaults to WGS84 (EPSG:4979) with ellipsoidal heights.
+    If XMP tags ``HorizCS``/``VertCS`` are missing, defaults to WGS84 (``EPSG:4979``) with ellipsoidal heights.
 
     :param tags: Grouped metadata values (e.g. from ``MetaTagsBase.get_all()``).
     :type tags: MetaTagAll
