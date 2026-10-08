@@ -122,7 +122,7 @@ def image_from_meta(
     :param vertical_ref: Vertical reference mode passed to :func:`eor_from_meta`, defaults to ``ellipsoidal``.
         Supported values are:
         - ``ellipsoidal``: Interpret heights as ellipsoidal (WGS84 ellipsoid).
-        - ``orthometric``: Interpret heights as orthometric (EGM2008 geoid heights, EPSG:3855).
+        - ``orthometric``: Interpret heights as orthometric (EGM2008 geoid heights, ``EPSG:3855``).
         - ``relative``: Use  tag:``RelativeAltitude`` (if present) plus ``height_rel`` (start height) as height.
     :type vertical_ref: str
     :param height_rel: Reference height (meters) for ``vertical_ref='relative'``, defaults to ``0.0``.
