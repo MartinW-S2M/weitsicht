@@ -46,7 +46,12 @@ Currently, it is possible to use perspective and ortho-imagery and for mapping a
 
 ## Why is it called weitsicht?
 
-`weitsicht` is a German word that roughly means "far-sight" - being able to see into the distance. That fits the core idea here: a photo isn't just pixels; it's an image plane anchored to a viewpoint, and we use geometry to connect that plane to the world beyond the camera. In other words, it's applied photogrammetry with a bit of home-brew minimalism: point, project, monomplot. But "weitsicht" also means having foresight - building with tomorrow's applications and datasets in mind, not just today's demo. So the library stays modular: camera models, mappers, and metadata backends are plug-in pieces you can remix instead of rewriting. Call it far-sight for imagery, and long-sight for architecture.
+`weitsicht` is a German word that roughly means "far-sight" - being able to see into the distance. That fits the core
+idea here: a photo isn't just pixels; it's an image plane anchored to a viewpoint, and we use geometry to connect that
+plane to the world beyond the camera. In other words, it's applied photogrammetry with a bit of home-brew minimalism: 
+point, project, monoplot. But "weitsicht" also means having foresight - building with tomorrow's applications and
+datasets in mind, not just today's demo. So the library stays modular: camera models, mappers, and metadata backends
+are plug-in pieces you can remix instead of rewriting. Call it far-sight for imagery, and long-sight for architecture.
 
 ## Capabilities
 
@@ -212,8 +217,7 @@ Main functions of the classes are:
     import pyproj
     from pyproj import CRS
 
-    from weitsicht import (CameraOpenCVPerspective, ImagePerspective, MappingHorizontalPlane)
-    from weitsicht import Rotation
+    from weitsicht import (CameraOpenCVPerspective, ImagePerspective, MappingHorizontalPlane, Rotation)
 
     # To directly download the grids needed for coordinate transformation we enable the network capability of proj
     pyproj.network.set_network_enabled(True)
@@ -240,9 +244,15 @@ Main functions of the classes are:
     # Map to image coordinates
     result = image.map_points(np.array([[2000,300],[2300, 400]]))
     if result.ok:
-      print("GSD of points: %f" % result.gsd)
+      print(f"GSD of points: {result.gsd:.3f}")
       print("Coordinates mapped", *result.coordinates)
 
+The above code should print the following outputs:
+
+```text
+GSD of points: 0.048
+Coordinates mapped [ 601911.93859268 5340378.61987876       0.        ] [ 601922.58573991 5340389.23453805       0.        ]
+```
 
 Refer to documentation for more examples http://weitsicht.github.io/
 
