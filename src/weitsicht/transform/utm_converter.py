@@ -60,7 +60,7 @@ def get_zone(longitude: float, latitude: float) -> int:
 def is_wgs84_crs(crs_input: CRS | str | int) -> bool:
     """Return whether the CRS is a known WGS84 geodetic CRS.
 
-    This intentionally only accepts EPSG:4326 and EPSG:4979, including equivalent WKT inputs.
+    This intentionally only accepts ``EPSG:4326`` and ``EPSG:4979``, including equivalent WKT inputs.
     Projected CRS that use a WGS84 datum, such as UTM zones, return ``False``.
     """
 
@@ -83,7 +83,7 @@ def point_convert_utm_wgs84_egm2008(
 ) -> tuple[float, float, float, CRS | CompoundCRS]:
     """Transform a single point into WGS84-UTM (EGM2008) coordinates.
 
-    The point is first transformed to WGS84 3D (EPSG:4979), then assigned to a UTM zone and
+    The point is first transformed to WGS84 3D (``EPSG:4979``), then assigned to a UTM zone and
     transformed to the corresponding compound CRS (UTM + EGM2008 geoid height).
 
     :param crs_s: CRS of the input point.
@@ -108,7 +108,7 @@ def point_convert_utm_wgs84(
     """Transform a single point into WGS84-UTM coordinates.
 
     The input CRS has to be 3D so that the transformation is correct.
-    The point is first transformed to WGS84 3D (EPSG:4979), then assigned to a UTM zone and
+    The point is first transformed to WGS84 3D (``EPSG:4979``), then assigned to a UTM zone and
     transformed to the corresponding compound CRS (UTM + either ellipsoid or EGM2008 geoid height).
 
     :param crs_s: CRS of the input point.

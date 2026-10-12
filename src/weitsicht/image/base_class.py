@@ -287,7 +287,7 @@ class ImageBase:
     # Standard properties
     @property
     def position_wgs84(self) -> tuple[float, float, float] | None:
-        """Return the position in WGS84 (EPSG:4979) of the image or None if not possible.
+        """Return the position in WGS84 (``EPSG:4979``) of the image or None if not possible.
         The position_to_crs method is defined by the class implementation.
 
         :return: Position in WGS84 (x, y, z) or ``None``.
@@ -305,7 +305,7 @@ class ImageBase:
 
     @property
     def position_wgs84_geojson(self) -> dict | None:
-        """Return the image position in WGS84 (EPSG:4979) as a GeoJSON point.
+        """Return the image position in WGS84 (``EPSG:4979``) as a GeoJSON point.
 
         :return: GeoJSON ``Point`` mapping or ``None`` if the position is unavailable.
         :rtype: dict | None

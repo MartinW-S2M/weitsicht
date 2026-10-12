@@ -157,7 +157,7 @@ class WGS84LocalTangent:
     def from_wgs84ell_elipsoid(
         cls, lon_deg: float, lat_deg: float, h_m: float, *, skip_ecef: bool = False
     ) -> WGS84LocalTangent:
-        """Create a tangent frame from WGS84 lon/lat and ellipsoidal height (EPSG:4979)."""
+        """Create a tangent frame from WGS84 lon/lat and ellipsoidal height (``EPSG:4979``)."""
 
         return cls.from_wgs84ell_crs(_CRS_WGS84_GEODETIC_3D, lon_deg, lat_deg, h_m, skip_ecef=skip_ecef)
 
@@ -165,7 +165,7 @@ class WGS84LocalTangent:
     def from_wgs84ell_orthometric(
         cls, lon_deg: float, lat_deg: float, h_m: float, *, skip_ecef: bool = False
     ) -> WGS84LocalTangent:
-        """Create a tangent frame from WGS84 lon/lat and orthometric height (EPSG:4326+3855)."""
+        """Create a tangent frame from WGS84 lon/lat and orthometric height (``EPSG:4326+3855``)."""
 
         return cls.from_wgs84ell_crs(_CRS_WGS84_ORTHOMETRIC, lon_deg, lat_deg, h_m, skip_ecef=skip_ecef)
 
