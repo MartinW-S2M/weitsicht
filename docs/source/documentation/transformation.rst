@@ -51,6 +51,18 @@ This is useful when you:
 - already have a validated PROJ pipeline (``CoordinateTransformer.from_pipeline(...)``),
 - want to force a specific transformation path for project requirements.
 
+Axis order
+==========
+
+``weitsicht`` uses ``always_xy=True`` for CRS transformations. Coordinates passed through the built-in
+transformers are therefore interpreted and returned in axis order ``x, y, z``: longitude/easting first,
+latitude/northing second, and height/depth third when present.
+
+If you provide your own transformation pipeline, the resulting coordinates should preferably also use
+``x, y, z`` axis order. Otherwise, make sure that all CRS definitions and coordinate conventions used by
+the raster data, mesh data, and camera model align with your custom pipeline.
+
+
 .. _pyproj-hints:
 
 pyproj / PROJ grid hints

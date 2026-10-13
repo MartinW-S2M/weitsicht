@@ -24,7 +24,7 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/MartinW-S2M/weitsicht/main.svg)](https://results.pre-commit.ci/latest/github/MartinW-S2M/weitsicht/main)
 &emsp;&emsp;![Docs passing](https://app.readthedocs.org/projects/weitsicht/badge/?version=latest)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20443144.svg)](https://doi.org/10.5281/zenodo.20443144)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20443144-1682D4?logo=zenodo)](https://doi.org/10.5281/zenodo.20443144)
 
 **Python package to use the direct geo-reference information of images for mapping and projection.**
 
@@ -261,7 +261,10 @@ This packages heavily depends on pyproj CRS and Transformer/TransformerGroups.
 
 > [!IMPORTANT]
 > weitsicht uses the setting always_xy for all Transformers.
-> Except you are constructing your own transformation pipeline
+> Its recommend if using a self defined transformation pipeline the transformer also returns x,y,z axis order.
+> In case using your own transformation pipeline the user need to take care that the defined CRS, its coordinate
+> axis order and the order of retuned values fits with other input data like raster
+> or mesh data and the camera CRS definition.
 
 The user must take care that all data is available for the Transformation needed
 ([Pyproj - Datadir](https://pyproj4.github.io/pyproj/stable/api/datadir.html))  or the network option is enabled
