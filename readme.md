@@ -137,17 +137,14 @@ There you will also find information about the mathematical background and defin
 ANy contributions are welcome for extending documentation.
 
 ## Brief History
-`weitsicht` originated from several loosely connected scripts and tools I developed in research and open-source projects. Parts of that code also went into **WISDAM (Wildlife Imagery Survey – Detection and Mapping)** (and its predecessor DugongDetector). It served as the photogrammetry/mapping core of WISDAMapp to map images and objects and to project them back into images. This enables users to assign groups, add spatial metadata, and find resights.
+`weitsicht` originated from several loosely connected scripts and tools I developed in research and open-source projects. Parts of that code also went into **WISDAM (Wildlife Imagery Survey – Detection and Mapping)** (and its predecessor DugongDetector and Oceanmapper). It served as the photogrammetry/mapping core of WISDAMapp to map images and objects and to project them back into images. This enables users to assign groups, add spatial metadata, and find resights.
 
 When WISDAM underwent a major refactoring in 2024/2025, I decided it was a good time to split the GUI and the geometric foundation into two parts. At the same time, there was growing interest in these functions from researchers with little to no background in photogrammetry/computer vision who wanted to work with aerial (especially drone) imagery without diving into packages like ``OpenCV`` or SfM tools.
+As of WISDAM version 1.1.0, the refactoring and switch from the old legacy geometric core within WISAM (first initial draft of weitsicht) to **weitsicht**  is complete.
 
 **WISDAMapp (Wildlife Imagery Survey – Detection and Mapping)** is a python GUI framework based on QT for the digitization and metadata enrichment of objects digitized in images and ortho-photos. Geo-referenced imagery can be used to map digitized objects to 3D or project them back into images for the purpose of grouping. It is used in wildlife monitoring where statistics about the appearance of certain animals are of importance.
 
 **The WISDAMapp repository can be found under http://www.github.com/WISDAMapp/** and the project webpage under http://wisdamapp.org .
-
-The temporary package was called WISDAMcore and is provided for legacy reasons as long as WISDAMapp is not fully switched to **weitsicht**.
-Currently, WISDAMapp undergoes refactoring to switch from the old WISDAMcore to **weitsicht**.
-
 
 ## Goals
 The intention of ` weitsicht` is to provide the community an easy-to-use package to deal with geo-referenced imagery.
