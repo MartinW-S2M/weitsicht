@@ -4,6 +4,8 @@ on:
     paths:
       - paper/**
       - .github/workflows/draft-pdf.yml
+  # Ermöglicht das manuelle Starten im GitHub-Dashboard zum Testen
+  workflow_dispatch:
 
 jobs:
   paper:

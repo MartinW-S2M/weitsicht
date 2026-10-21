@@ -18,7 +18,7 @@ affiliations:
   - name: Department of Geodesy and Geoinformation, TU Wien, Austria
     index: 1
     ror: 04d836q62
-date: 01 October 2026
+date: 21 October 2026
 bibliography: paper.bib
 ---
 
@@ -73,7 +73,16 @@ This design enables users to start from minimal inputs (an image, metadata, and 
 
 # Research impact statement
 
-By separating the geometric foundation from the WISDAM GUI, **`weitsicht`** provides reusable core functionality for multiple applied research domains. Within WISDAMapp [@wisdamapp], it supports workflows for wildlife monitoring (e.g., marine megafauna and dugong surveys) using drones and crewed aircraft, enabling researchers to map observations from geo-referenced imagery and to project mapped locations back into images to facilitate re-sighting and quality control. WISDAM was developed iteratively: earlier releases under the names `OceanMapper` (a GUI-less monoplotting prototype, see [@CLEGUER2021]) and `DugongDetector` (an initial, dugong-focused GUI) represent development stages of the same software that is now released as WISDAM. The workflow builds on UAV/aerial imagery survey methodology and detection-probability estimation [@HODGSON2017]. The software framework has been used in peer-reviewed research, for example in a recent dugong habitat assessment using paired drone and in-water surveys [@SAID2025] and [@Digdo2025] report a drone survey for dugongs in a limited-resource context that combined manual analysis with AI-assisted detection using WISDAM. The WISDAM app has been developed and applied in collaborations involving institutions including Edith Cowan University (Centre for Marine Ecosystems Research), Murdoch University (Centre for Sustainable Aquatic Ecosystems, Harry Butler Institute), TU Wien (photogrammetry and remote sensing), and James Cook University (TropWATER), and in projects with partners such as the Seychelles Islands Foundation, Insitu Pacific Inc., the Australian Antarctic Division and Queensland University of Technology as documented on the project website [@wisdamapp].
+By separating the geometric foundation from the WISDAM GUI, **`weitsicht`** provides reusable core functionality for multiple applied research domains. 
+Within WISDAMapp [@wisdamapp], it supports workflows for wildlife monitoring (e.g., marine megafauna and dugong surveys) using drones and crewed aircraft,
+enabling researchers to map observations from geo-referenced imagery and to project mapped locations back into images to facilitate re-sighting and quality control.
+WISDAM was developed iteratively: earlier releases under the names `OceanMapper` (a GUI-less monoplotting prototype,
+see [@CLEGUER2021]) and `DugongDetector` (an initial, dugong-focused GUI) represent development stages of the same software that is now released as WISDAM.
+The workflow builds on UAV/aerial imagery survey methodology and detection-probability estimation [@HODGSON2017].
+The software framework has been used in peer-reviewed research via using WISDAM, for example in a recent dugong habitat assessment using paired drone and in-water surveys [@SAID2025].
+[@Digdo2025] report a drone survey for dugongs in a limited-resource context that combined manual analysis with AI-assisted detection using WISDAM.
+And [@Raudino] used WISDAM for their review workflow in a wuthuga (dugong) abundance study using ariel imagery.
+The WISDAM app has been developed and applied in collaborations involving institutions including Edith Cowan University (Centre for Marine Ecosystems Research), Murdoch University (Centre for Sustainable Aquatic Ecosystems, Harry Butler Institute), TU Wien (photogrammetry and remote sensing), and James Cook University (TropWATER), and in projects with partners such as the Seychelles Islands Foundation, Insitu Pacific Inc., the Australian Antarctic Division and Queensland University of Technology as documented on the project website [@wisdamapp].
 
 In archaeological and cultural-heritage contexts, **`weitsicht`** supports direct-georeferencing and single-image mapping workflows relevant to projects such as it was implemented by ARAP (University of Vienna) [@arap] and INDIGO [@indigo], where efficient projection between images and 3D surfaces enables rapid documentation, spatial analysis, and dissemination without requiring a full SfM pipeline [@WIESER2024; @WIESER2014; @DONEUS2016; @VERHOEVEN2013]. Parts of functionality developed in that projects are some of the roots beside `WISDAMapp` and where consequently enhanced and improved.
 
