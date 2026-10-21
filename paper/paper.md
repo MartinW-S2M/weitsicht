@@ -30,7 +30,7 @@ bibliography: paper.bib
 
 Aerial imagery is widely used in wildlife monitoring and ecological surveys, where researchers often require rapid,
 repeatable conversion of image detections into mapped coordinates for abundance estimation and spatial modelling.
-**`weitsicht`** draws on several research and software roots; one major origin is the geometric foundation developed for **WISDAMapp (Wildlife Imagery Survey — Detection and Mapping)**[@wisdamapp], a GUI used by marine and terrestrial megafauna researchers to digitize objects in images, enrich them with metadata, and map them to real-world coordinates without requiring deep photogrammetry expertise. In these operational settings, an approximate direct georeference (from INS/IMU+GNSS logs or image EXIF/XMP) is frequently sufficient, while full 3D reconstruction with Structure-from-Motion (SfM) can be unnecessarily complex, time-consuming, or prohibitively expensive for non-specialists. During a major refactoring leading up to the first public release of WISDAMapp, its geometric core functions were separated from the GUI and, together with functionality from other projects, formed **`weitsicht`** .
+**`weitsicht`** draws on several research and software roots; one major origin is the geometric foundation developed for **WISDAMapp (Wildlife Imagery Survey — Detection and Mapping)**[@wisdam], a GUI used by marine and terrestrial megafauna researchers to digitize objects in images, enrich them with metadata, and map them to real-world coordinates without requiring deep photogrammetry expertise. In these operational settings, an approximate direct georeference (from INS/IMU+GNSS logs or image EXIF/XMP) is frequently sufficient, while full 3D reconstruction with Structure-from-Motion (SfM) can be unnecessarily complex, time-consuming, or prohibitively expensive for non-specialists. During a major refactoring leading up to the first public release of WISDAMapp, its geometric core functions were separated from the GUI and, together with functionality from other projects, formed **`weitsicht`** .
 
 Beyond ecology, single-image mapping is also valuable in airborne archaeology and rapid documentation, where an INS
 solution may provide direct georeferencing for each exposure but only sparse or single images are available. **`weitsicht`** supports these workflows by extracting pose and camera information from metadata, applying camera distortion models, and intersecting rays with user-provided terrain models.
@@ -59,7 +59,7 @@ composable abstractions aimed at geospatial workflows.
 **`weitsicht`** is organized as modular subpackages:
 
 - `weitsicht.camera`: perspective camera models (including an OpenCV-style distortion model) used for projection and ray generation.
-- `weitsicht.image`: image models combining camera intrinsics, exterior orientation, and CRS context, exposing `project_*` and `map_*` methods for 3D↔2D transformations.
+- `weitsicht.image`: image models combining camera intrinsics, exterior orientation, and CRS context, exposing `project_*` and `map_*` methods for 3D-2D transformations.
 - `weitsicht.mapping`: interchangeable mappers that define the terrain/surface used for ray intersections, including a horizontal plane mapper, a raster/DSM mapper based on `rasterio` [@rasterio] (and therefore GDAL [@gdal]), and a mesh mapper based on `trimesh` [@trimesh].
 - `weitsicht.metadata`: utilities to estimate camera intrinsics and extract exterior orientation and CRS information from EXIF/XMP metadata (e.g., drone payloads that record IMU/GNSS/INS).
 - `weitsicht.transform`: CRS and rotation utilities with a consistent "always x/y" convention to reduce common user errors when transforming between geographic and projected coordinate systems.
@@ -73,16 +73,16 @@ This design enables users to start from minimal inputs (an image, metadata, and 
 
 # Research impact statement
 
-By separating the geometric foundation from the WISDAM GUI, **`weitsicht`** provides reusable core functionality for multiple applied research domains. 
-Within WISDAMapp [@wisdamapp], it supports workflows for wildlife monitoring (e.g., marine megafauna and dugong surveys) using drones and crewed aircraft,
+By separating the geometric foundation from the WISDAM GUI, **`weitsicht`** provides reusable core functionality for multiple applied research domains.
+Within WISDAMapp [@wisdam], it supports workflows for wildlife monitoring (e.g., marine megafauna and dugong surveys) using drones and crewed aircraft,
 enabling researchers to map observations from geo-referenced imagery and to project mapped locations back into images to facilitate re-sighting and quality control.
 WISDAM was developed iteratively: earlier releases under the names `OceanMapper` (a GUI-less monoplotting prototype,
 see [@CLEGUER2021]) and `DugongDetector` (an initial, dugong-focused GUI) represent development stages of the same software that is now released as WISDAM.
 The workflow builds on UAV/aerial imagery survey methodology and detection-probability estimation [@HODGSON2017].
 The software framework has been used in peer-reviewed research via using WISDAM, for example in a recent dugong habitat assessment using paired drone and in-water surveys [@SAID2025].
 [@Digdo2025] report a drone survey for dugongs in a limited-resource context that combined manual analysis with AI-assisted detection using WISDAM.
-And [@Raudino] used WISDAM for their review workflow in a wuthuga (dugong) abundance study using ariel imagery.
-The WISDAM app has been developed and applied in collaborations involving institutions including Edith Cowan University (Centre for Marine Ecosystems Research), Murdoch University (Centre for Sustainable Aquatic Ecosystems, Harry Butler Institute), TU Wien (photogrammetry and remote sensing), and James Cook University (TropWATER), and in projects with partners such as the Seychelles Islands Foundation, Insitu Pacific Inc., the Australian Antarctic Division and Queensland University of Technology as documented on the project website [@wisdamapp].
+And [@raudino2026] used WISDAM for their review workflow in a wuthuga (dugong) abundance study using ariel imagery.
+The WISDAM app has been developed and applied in collaborations involving institutions including Edith Cowan University (Centre for Marine Ecosystems Research), Murdoch University (Centre for Sustainable Aquatic Ecosystems, Harry Butler Institute), TU Wien (photogrammetry and remote sensing), and James Cook University (TropWATER), and in projects with partners such as the Seychelles Islands Foundation, Insitu Pacific Inc., the Australian Antarctic Division and Queensland University of Technology as documented on the project website [@wisdam].
 
 In archaeological and cultural-heritage contexts, **`weitsicht`** supports direct-georeferencing and single-image mapping workflows relevant to projects such as it was implemented by ARAP (University of Vienna) [@arap] and INDIGO [@indigo], where efficient projection between images and 3D surfaces enables rapid documentation, spatial analysis, and dissemination without requiring a full SfM pipeline [@WIESER2024; @WIESER2014; @DONEUS2016; @VERHOEVEN2013]. Parts of functionality developed in that projects are some of the roots beside `WISDAMapp` and where consequently enhanced and improved.
 
