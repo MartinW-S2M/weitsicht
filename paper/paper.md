@@ -24,7 +24,7 @@ bibliography: paper.bib
 
 # Summary
 
-**`weitsicht`** is an Apache-2.0 Python library for working with geo-referenced imagery by connecting image pixel coordinates to 3D world coordinates. It implements (i) projection of 3D coordinates into a camera model and (ii) single-image ray/surface intersection ("monoplotting") to map image measurements to 3D points using terrain representations such as planes, digital surface models (rasters), or 3D meshes. **`weitsicht`** is designed to leverage direct georeferencing (e.g., IMU/GNSS/INS metadata from drones) or camera poses computed externally (e.g., from photogrammetry/SfM pipelines) and to provide a compact, GIS-oriented API with coordinate reference system (CRS) handling via `pyproj` [@pyproj], raster handling via `rasterio` [@rasterio] (and therefore GDAL [@gdal]), and numerical foundations in `NumPy` [@numpy]. The source code for **`weitsicht`** has been archived to zenodo with the associated DOI: https://doi.org/10.5281/zenodo.20443144
+**`weitsicht`** is an Apache-2.0 Python library for working with geo-referenced imagery by connecting image pixel coordinates to 3D world coordinates. It implements (i) projection of 3D coordinates into a camera model and (ii) single-image ray/surface intersection ("monoplotting") to map image measurements to 3D points using terrain representations such as planes, digital surface models (rasters), or 3D meshes. **`weitsicht`** is designed to leverage direct georeferencing (e.g., IMU/GNSS/INS metadata from drones) or camera poses computed externally (e.g., from photogrammetry/SfM pipelines) and to provide a compact, GIS-oriented API with coordinate reference system (CRS) handling via `pyproj` [@pyproj], raster handling via `rasterio` [@rasterio] (and therefore GDAL [@gdal]), and numerical foundations in `NumPy` [@numpy]. The source code for **`weitsicht`** has been archived to zenodo with the associated DOI: https://doi.org/10.5281/zenodo.18864807
 
 # Statement of need
 
@@ -61,7 +61,7 @@ composable abstractions aimed at geospatial workflows.
 - `weitsicht.camera`: perspective camera models (including an OpenCV-style distortion model) used for projection and ray generation.
 - `weitsicht.image`: image models combining camera intrinsics, exterior orientation, and CRS context, exposing `project_*` and `map_*` methods for 3D-2D transformations.
 - `weitsicht.mapping`: interchangeable mappers that define the terrain/surface used for ray intersections, including a horizontal plane mapper, a raster/DSM mapper based on `rasterio` [@rasterio] (and therefore GDAL [@gdal]), and a mesh mapper based on `trimesh` [@trimesh].
-- `weitsicht.metadata`: utilities to estimate camera intrinsics and extract exterior orientation and CRS information from EXIF/XMP metadata (e.g., drone payloads that record IMU/GNSS/INS).
+- `weitsicht.metadata`: Utilities to estimate camera intrinsics and extract exterior orientation and coordinate reference system (CRS) information from EXIF/XMP metadata (e.g., from drone payloads recording IMU/GNSS/INS data). The current implementation supports metadata tags produced by ExifTool but can be easily extended to other tag naming conventions, such as those used by Exiv2 backends, through a common base tag class.
 - `weitsicht.transform`: CRS and rotation utilities with a consistent "always x/y" convention to reduce common user errors when transforming between geographic and projected coordinate systems.
 
 Modularity is an explicit design goal: new camera models (e.g., fisheye or panoramic/360° cameras) and new mapping
@@ -70,6 +70,8 @@ implemented by extending the corresponding camera or mapper interfaces while kee
 
 This design enables users to start from minimal inputs (an image, metadata, and a terrain model) and progress to mapped
 3D points, footprints, or back-projected image coordinates with clear error handling and typed results. Advanced users can extend the library by implementing additional camera models, metadata backends, or mapping surfaces while reusing the same projection and CRS infrastructure.
+
+Python was chosen due to its widespread adoption in geospatial science and its extensive ecosystem of scientific libraries. Although computational performance may be lower than that of compiled languages, only basic performance optimizations have been implemented so far, leaving room for future improvements.
 
 # Research impact statement
 
