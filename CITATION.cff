@@ -12,7 +12,7 @@ authors:
     orcid: 'https://orcid.org/0009-0005-9870-6494'
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.18864807
+    value: 10.5281/zenodo.23566514
 repository-code: 'https://github.com/MartinW-S2M/weitsicht'
 abstract: >-
   A Python package that enables further use of georeferenced

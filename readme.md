@@ -24,7 +24,7 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/MartinW-S2M/weitsicht/main.svg)](https://results.pre-commit.ci/latest/github/MartinW-S2M/weitsicht/main)
 &emsp;&emsp;![Docs passing](https://app.readthedocs.org/projects/weitsicht/badge/?version=latest)
 
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20443144-1682D4?logo=zenodo)](https://doi.org/10.5281/zenodo.20443144)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23566514.svg)](https://doi.org/10.5281/zenodo.23566514)
 [![pyOpenSci Peer-Reviewed](https://pyopensci.org/badges/peer-reviewed.svg)](https://github.com/pyOpenSci/software-review/issues/284)
 
 **Python package to use the direct geo-reference information of images for mapping and projection.**
