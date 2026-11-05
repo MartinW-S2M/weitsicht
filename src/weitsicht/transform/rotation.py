@@ -39,6 +39,7 @@ class Rotation:
 
     - **OPK**: omega/phi/kappa (radians/degrees)
     - **APK**: alpha/zeta/kappa (radians/degrees)
+    - **RPY NED**: aerospace roll/pitch/yaw converted to camera-to-ENU
 
     Axis conventions in weitsicht:
     - X axis: left → right in the image
@@ -138,6 +139,107 @@ class Rotation:
         rotation = cls(np.eye(3, 3, dtype=float))
         rotation.apk = np.array([alpha, zeta, kappa])
         return rotation
+
+    @classmethod
+    def from_rpy_ned(cls, roll: float, pitch: float, yaw: float) -> Rotation:
+        """Create a camera-to-ENU rotation from NED roll/pitch/yaw in radians.
+
+        Uses the aerospace convention: body axes are forward,
+        right, down and ``R_body_to_ned = Rz(yaw) @ Ry(pitch) @ Rx(roll)``
+        (intrinsic ZYX). Positive yaw turns North towards East; positive pitch
+        raises the nose; positive roll lowers the right side.
+
+        The camera looks along body forward (+X). Camera right is body +Y,
+        camera up is body -Z, and camera backwards is body -X. The returned
+        matrix therefore maps Weitsicht camera vectors (right, up, backwards)
+        into ENU: ``v_enu = rotation.matrix @ v_camera``.
+        At zero angles the camera looks North with image top pointing Up.
+        The line of sight is ``-rotation.matrix[:, 2]``; pitch -pi/2 looks
+        straight down. Roll rotates the image about the line of sight.
+
+        Angles must describe the camera's forward/right/down attitude. Raw INS
+        angles require mounting calibration if its axes differ from these.
+        Local ENU uses true North; a projected CRS may require an additional
+        meridian-convergence correction. No position or CRS is transformed.
+
+        :param roll: Roll about body X, in radians.
+        :param pitch: Pitch about body Y, in radians.
+        :param yaw: Heading about NED Down, in radians.
+        :return: Camera-to-ENU rotation.
+        """
+        sr, cr = np.sin(roll), np.cos(roll)
+        sp, cp = np.sin(pitch), np.cos(pitch)
+        sy, cy = np.sin(yaw), np.cos(yaw)
+
+        body_to_ned = np.array(
+            [
+                [cp * cy, sr * sp * cy - cr * sy, cr * sp * cy + sr * sy],
+                [cp * sy, sr * sp * sy + cr * cy, cr * sp * sy - sr * cy],
+                [-sp, sr * cp, cr * cp],
+            ]
+        )
+        ned_to_enu = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
+        camera_to_body = np.array([[0.0, 0.0, -1.0], [1.0, 0.0, 0.0], [0.0, -1.0, 0.0]])
+        return cls(ned_to_enu @ body_to_ned @ camera_to_body)
+
+    @classmethod
+    def from_rpy_ned_degree(cls, roll: float, pitch: float, yaw: float) -> Rotation:
+        """Create a camera-to-ENU rotation from NED roll/pitch/yaw in degrees.
+
+        See :meth:`from_rpy_ned` for frame, sequence, and camera mounting conventions.
+
+        :param roll: Roll about body X, in degrees.
+        :param pitch: Pitch about body Y, in degrees.
+        :param yaw: Heading about NED Down, in degrees.
+        :return: Camera-to-ENU rotation.
+        """
+        return cls.from_rpy_ned(*np.deg2rad([roll, pitch, yaw]))
+
+    @property
+    def rpy_ned(self) -> Vector3D:
+        """Return camera NED ``[roll, pitch, yaw]`` in radians.
+
+        Inverts :meth:`from_rpy_ned`, including the camera-axis conversion.
+        Pitch is in [-pi/2, pi/2]; roll and yaw are in [-pi, pi].
+        At gimbal lock (abs(cos(pitch)) <= 1e-12), roll is set to zero
+        and the combined rotation is assigned to yaw. The camera matrix is
+        preserved to that tolerance, but the original roll/yaw are not unique.
+        Near vertical viewing, roll and yaw are numerically ill-conditioned;
+        use the matrix for calculations and interpolation.
+        """
+        ned_to_enu = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
+        camera_to_body = np.array([[0.0, 0.0, -1.0], [1.0, 0.0, 0.0], [0.0, -1.0, 0.0]])
+        body_to_ned = ned_to_enu.T @ self._rotation_matrix @ camera_to_body.T
+        cos_pitch = np.hypot(body_to_ned[0, 0], body_to_ned[1, 0])
+        pitch = np.arctan2(-body_to_ned[2, 0], cos_pitch)
+        if cos_pitch <= 1e-12:
+            roll = 0.0
+            yaw = np.arctan2(-body_to_ned[0, 1], body_to_ned[1, 1])
+        else:
+            roll = np.arctan2(body_to_ned[2, 1], body_to_ned[2, 2])
+            yaw = np.arctan2(body_to_ned[1, 0], body_to_ned[0, 0])
+        return np.array([roll, pitch, yaw])
+
+    @rpy_ned.setter
+    def rpy_ned(self, angles: Vector3D):
+        """Set camera NED ``[roll, pitch, yaw]`` in radians (shape ``(3,)``)."""
+        angles = np.asarray(angles, dtype=float)
+        if angles.shape != (3,):
+            raise ValueError(f"Vector3D expected, shape is: {angles.shape}")
+        self._rotation_matrix = type(self).from_rpy_ned(*angles).matrix
+
+    @property
+    def rpy_ned_degree(self) -> Vector3D:
+        """Return camera NED ``[roll, pitch, yaw]`` in degrees.
+
+        See :attr:`rpy_ned` for ranges and the roll=0 gimbal-lock convention.
+        """
+        return np.rad2deg(self.rpy_ned)
+
+    @rpy_ned_degree.setter
+    def rpy_ned_degree(self, angles: Vector3D):
+        """Set camera NED ``[roll, pitch, yaw]`` in degrees (shape ``(3,)``)."""
+        self.rpy_ned = np.deg2rad(angles)
 
     @property
     def matrix(self) -> Array3x3:

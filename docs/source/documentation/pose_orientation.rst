@@ -88,6 +88,53 @@ For how 2D image observations (:math:`x, y`) are linked to this pose via interio
 (:math:`x_0, y_0, c` and distortion) and the classic collinearity equations, see :doc:`image/perspective_image`.
 
 
+NED roll/pitch/yaw (SBG / aerospace)
+==================================
+
+Use ``Rotation.from_rpy_ned(roll, pitch, yaw)`` for radians or
+``Rotation.from_rpy_ned_degree(roll, pitch, yaw)`` for degrees.
+These constructors accept body-to-NED attitude with forward/right/down body axes
+and the aerospace sequence ``Rz(yaw) @ Ry(pitch) @ Rx(roll)`` (intrinsic ZYX).
+This matches the `SBG rotation convention
+<https://support.sbg-systems.com/sc/kb/latest/underlying-maths-conventions/orientation-rotations-representation>`_.
+
+The resulting matrix maps **Weitsicht camera vectors into local ENU**. After
+converting NED to ENU, the constructors convert camera axes (right, up, backwards)
+to the forward/right/down attitude frame: camera X = body Y, camera Y = -body Z,
+camera Z = -body X. Thus the camera looks along body forward.
+
+At zero angles, the camera looks North with image top pointing Up. Positive yaw
+turns towards East, positive pitch looks upwards, and positive roll lowers the
+image's right side. Pitch -90 degrees looks straight down. Roll changes image
+orientation without changing the viewing direction.
+
+.. code-block:: python
+
+    orientation = Rotation.from_rpy_ned_degree(roll=2.0, pitch=-30.0, yaw=45.0)
+    line_of_sight_enu = -orientation.matrix[:, 2]
+    # Pass orientation directly to ImagePerspective.
+
+Read or update angles with ``orientation.rpy_ned`` (radians) or
+``orientation.rpy_ned_degree`` (degrees), each a ``[roll, pitch, yaw]`` vector.
+The getters return pitch in [-90, 90] degrees and roll/yaw in [-180, 180] degrees.
+At pitch +/-90 degrees, roll and yaw cannot be recovered independently (gimbal
+lock). The getters choose **roll = 0** and fold the combined rotation into yaw:
+at +90 degrees this is yaw minus roll; at -90 degrees it is yaw plus roll,
+wrapped to [-180, 180]. The represented camera rotation is preserved.
+The singular branch uses ``abs(cos(pitch)) <= 1e-12``.
+Near these vertical views, roll and yaw can change sharply for tiny attitude
+changes. The matrix remains well-defined; use it for computations and avoid
+interpolating Euler angles. At vertical viewing, yaw describes image orientation
+rather than a horizontal line-of-sight heading.
+
+Angles must describe the camera's forward/right/down attitude. If raw INS axes
+differ from this frame, account for the actual mounting calibration first.
+These constructors do not transform the
+position or convert ENU to ECEF or projected grid axes. Local ENU references true
+North; a UTM image pose also requires the appropriate meridian-convergence
+correction.
+
+
 Two common photogrammetry angle notations
 =========================================
 

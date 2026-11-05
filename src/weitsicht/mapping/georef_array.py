@@ -33,7 +33,7 @@ from weitsicht.geometry.intersection_bilinear import multilinear_poly_intersecti
 from weitsicht.geometry.line_grid_intersection import (
     line_grid_intersection_points,
     raster_index_p1_p2,
-    vector_projection,
+    #    vector_projection,
 )
 from weitsicht.mapping.base_class import MappingBase, MappingType
 from weitsicht.transform.coordinates_transformer import CoordinateTransformer
@@ -662,10 +662,10 @@ class MappingGeorefArray(MappingBase):
 
                 # intersection_plane_mat_operation(p1,p2-p1,cells)
 
-                prj_1 = vector_projection(p1, p2, cells)
-                prj_2 = vector_projection(p1, p2, cells_col1)
-                prj_3 = vector_projection(p1, p2, cells_row1_col1)
-                prj_4 = vector_projection(p1, p2, cells_row1)
+                # prj_1 = vector_projection(p1, p2, cells)
+                # prj_2 = vector_projection(p1, p2, cells_col1)
+                # prj_3 = vector_projection(p1, p2, cells_row1_col1)
+                # prj_4 = vector_projection(p1, p2, cells_row1)
 
                 # This vertical stuff is not working for vertical lines
                 # inside = np.logical_and(prj_1[:, 2] <= cells_max, prj_1[:, 2] >= cells_min)
@@ -673,15 +673,17 @@ class MappingGeorefArray(MappingBase):
                 # inside = np.logical_or(inside, np.logical_and(prj_3[:, 2] <= cells_max, prj_3[:, 2] >= cells_min))
                 # inside = np.logical_or(inside, np.logical_and(prj_4[:, 2] <= cells_max, prj_4[:, 2] >= cells_min))
 
-                inside = np.all(abs(prj_1[:, 0:2] - cells[:, 0:2]) <= 2, axis=1)
-                inside = np.logical_and(inside, np.all(abs(prj_2[:, 0:2] - cells_col1[:, 0:2]) <= 2, axis=1))
-                inside = np.logical_and(
-                    inside,
-                    np.all(abs(prj_3[:, 0:2] - cells_row1_col1[:, 0:2]) <= 2, axis=1),
-                )
-                inside = np.logical_and(inside, np.all(abs(prj_4[:, 0:2] - cells_row1[:, 0:2]) <= 2, axis=1))
+                # inside = np.all(abs(prj_1[:, 0:2] - cells[:, 0:2]) <= 2, axis=1)
+                # inside = np.logical_and(inside, np.all(abs(prj_2[:, 0:2] - cells_col1[:, 0:2]) <= 2, axis=1))
+                # inside = np.logical_and(
+                #    inside,
+                #    np.all(abs(prj_3[:, 0:2] - cells_row1_col1[:, 0:2]) <= 2, axis=1),
+                # )
+                # inside = np.logical_and(inside, np.all(abs(prj_4[:, 0:2] - cells_row1[:, 0:2]) <= 2, axis=1))
 
-                index_to_check = np.flatnonzero(inside)
+                # index_to_check = np.flatnonzero(inside)
+
+                index_to_check = np.arange(len(cells))
                 # Iteration over all the cell which the current piece of the ray is in 2d touched
                 if len(index_to_check) > 0:
                     for _index in index_to_check:
